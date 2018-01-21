@@ -7,10 +7,17 @@ Eventually-consistent, conflict-free replicated data types (CRDT) [implemented](
 This module and the IPFS PubSub system are experimental. If you encounter an issue, fork the repository, [write tests demonstrating](https://github.com/wehriam/ipfs-observed-remove/tree/master/tests) the issue, and create a [pull request](https://github.com/wehriam/ipfs-observed-remove).
 
 ```js
+const ipfsAPI = require('ipfs-api');
 const { IpfsObservedRemoveSet } = require('ipfs-observed-remove');
 
-const alice = new ObservedRemoveSet();
-const bob = new ObservedRemoveSet();
+// IPFS nodes with PubSub enabled
+const ipfs1 = ipfsAPI('/ip4/127.0.0.1/tcp/5001'); 
+const ipfs2 = ipfsAPI('/ip4/127.0.0.1/tcp/5002');
+
+const topic = "CRDT_SET";
+
+const alice = new IpfsObservedRemoveSet(ipfs1, topic );
+const bob = new IpfsObservedRemoveSet(ipfs2, topic);
 
 alice.on('publish', (message) => {
   setTimeout(() => bob.process(message), Math.round(Math.random() * 1000));
@@ -18,6 +25,10 @@ alice.on('publish', (message) => {
 
 bob.on('publish', (message) => {
   setTimeout(() => alice.process(message), Math.round(Math.random() * 1000));
+});
+
+alice.on('add', (value) => {
+  console.log(value); // logs foo, bar
 });
 
 alice.add('foo');
@@ -30,10 +41,17 @@ bob.has('foo'); // true
 ```
 
 ```js
+const ipfsAPI = require('ipfs-api');
 const { IpfsObservedRemoveMap } = require('ipfs-observed-remove');
 
-const alice = new ObservedRemoveMap();
-const bob = new ObservedRemoveMap();
+// IPFS nodes with PubSub enabled
+const ipfs1 = ipfsAPI('/ip4/127.0.0.1/tcp/5001'); 
+const ipfs2 = ipfsAPI('/ip4/127.0.0.1/tcp/5002');
+
+const topic = "CRDT_MAP";
+
+const alice = new IpfsObservedRemoveMap(ipfs1, topic);
+const bob = new IpfsObservedRemoveMap(ipfs2, topic);
 
 alice.on('publish', (message) => {
   setTimeout(() => bob.process(message), Math.round(Math.random() * 1000));
@@ -41,6 +59,10 @@ alice.on('publish', (message) => {
 
 bob.on('publish', (message) => {
   setTimeout(() => alice.process(message), Math.round(Math.random() * 1000));
+});
+
+alice.on('set', (key, value) => {
+  console.log(key, value); // logs [a, 1], [b, 2]
 });
 
 alice.set('a', 1);
