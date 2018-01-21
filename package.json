@@ -9,7 +9,7 @@
     "build": "rm -rf ./dist; flow-remove-types ./src --out-dir ./dist",
     "flow-typed": "./node_modules/.bin/flow-typed install --overwrite",
     "test": "yarn lint && yarn test:js",
-    "test:js": "cross-env NODE_ENV=test jest --runInBand tests",
+    "test:js": "cross-env NODE_ENV=test jest --forceExit tests",
     "lint": "npm run lint:js && npm run lint:flow",
     "lint:js": "eslint -c ./.eslintrc --no-eslintrc --fix .",
     "lint:flow": "flow --show-all-errors",
@@ -61,6 +61,7 @@
     "ipfsd-ctl": "^0.27.0",
     "jest": "^22.1.4",
     "jest-flow-transform": "^1.0.1",
+    "json-stringify-deterministic": "^1.0.1",
     "pre-commit": "^1.2.2",
     "uuid": "^3.2.1"
   },

@@ -86,7 +86,7 @@ See: <https://github.com/wehriam/observed-remove#set-api>
 
 -   `ipfs` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
 -   `topic` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** 
--   `entries` **Iterable&lt;V>** 
+-   `entries` **Iterable&lt;T>** 
 -   `options` **Options**  (optional, default `{}`)
 
 #### ipfsSync

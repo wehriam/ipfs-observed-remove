@@ -1,0 +1,105 @@
+// @flow
+
+const uuid = require('uuid');
+const stringify = require('json-stringify-deterministic');
+const { getSwarm } = require('./lib/ipfs');
+const { IpfsObservedRemoveMap } = require('../src');
+const { generateValue } = require('./lib/values');
+
+jest.setTimeout(30000);
+
+const COUNT = 10;
+let nodes = [];
+
+beforeAll(async () => {
+  nodes = await getSwarm(COUNT);
+});
+
+test(`Synchronizes ${COUNT} maps`, async () => {
+  const topic = uuid.v4();
+  const keyA = uuid.v4();
+  const keyB = uuid.v4();
+  const keyC = uuid.v4();
+  const valueA = generateValue();
+  const valueB = generateValue();
+  const valueC = generateValue();
+  const aMapPromises = [];
+  const bMapPromises = [];
+  const cMapPromises = [];
+  const aDeletePromises = [];
+  const bDeletePromises = [];
+  const cDeletePromises = [];
+  const maps = nodes.map((node) => {
+    const map = new IpfsObservedRemoveMap(node, topic);
+    aMapPromises.push(new Promise((resolve) => {
+      const handler = (key, value) => {
+        if (key === keyA && stringify(value) === stringify(valueA)) {
+          map.removeListener('set', handler);
+          resolve();
+        }
+      };
+      map.on('set', handler);
+    }));
+    bMapPromises.push(new Promise((resolve) => {
+      const handler = (key, value) => {
+        if (key === keyB && stringify(value) === stringify(valueB)) {
+          map.removeListener('set', handler);
+          resolve();
+        }
+      };
+      map.on('set', handler);
+    }));
+    cMapPromises.push(new Promise((resolve) => {
+      const handler = (key, value) => {
+        if (key === keyC && stringify(value) === stringify(valueC)) {
+          map.removeListener('set', handler);
+          resolve();
+        }
+      };
+      map.on('set', handler);
+    }));
+    aDeletePromises.push(new Promise((resolve) => {
+      const handler = (key, value) => {
+        if (key === keyA && stringify(value) === stringify(valueA)) {
+          map.removeListener('delete', handler);
+          resolve();
+        }
+      };
+      map.on('delete', handler);
+    }));
+    bDeletePromises.push(new Promise((resolve) => {
+      const handler = (key, value) => {
+        if (key === keyB && stringify(value) === stringify(valueB)) {
+          map.removeListener('delete', handler);
+          resolve();
+        }
+      };
+      map.on('delete', handler);
+    }));
+    cDeletePromises.push(new Promise((resolve) => {
+      const handler = (key, value) => {
+        if (key === keyC && stringify(value) === stringify(valueC)) {
+          map.removeListener('delete', handler);
+          resolve();
+        }
+      };
+      map.on('delete', handler);
+    }));
+    return map;
+  });
+  const randomMap = () => maps[Math.floor(Math.random() * maps.length)];
+  await Promise.all(maps.map((map) => map.readyPromise));
+  randomMap().set(keyA, valueA);
+  await Promise.all(aMapPromises);
+  randomMap().set(keyB, valueB);
+  await Promise.all(bMapPromises);
+  randomMap().set(keyC, valueC);
+  await Promise.all(cMapPromises);
+  randomMap().delete(keyA);
+  await Promise.all(aDeletePromises);
+  randomMap().delete(keyB);
+  await Promise.all(bDeletePromises);
+  randomMap().delete(keyC);
+  await Promise.all(cDeletePromises);
+});
+

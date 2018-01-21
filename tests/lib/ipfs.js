@@ -41,8 +41,12 @@ const getIpfsNode = module.exports.getIpfsNode = async (bootstrap:Array<string> 
   return ipfs;
 };
 
+let nodes = [];
+
 module.exports.getSwarm = async (count:number) => {
-  const nodes = await Promise.all(Array.from({ length: count }, getIpfsNode));
+  if (nodes.length < count) {
+    nodes = nodes.concat(await Promise.all(Array.from({ length: count - nodes.length }, getIpfsNode)));
+  }
   if (count > 1) {
     let connectedNodes = 0;
     while (connectedNodes < count) {
@@ -50,15 +54,14 @@ module.exports.getSwarm = async (count:number) => {
       connectedNodes = 0;
       await Promise.all(nodes.map(async (node) => { // eslint-disable-line no-loop-func
         const peers = await node.swarm.peers();
-        if (peers.length >= count - 1) {
+        await node.id();
+        if (peers.length >= nodes.length - 1) {
           connectedNodes += 1;
         }
       }));
     }
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
-  const stopSwarm = async () => {
-    await Promise.all(nodes.map((node) => node.stopNode()));
-  };
-  return [nodes, stopSwarm];
+  return nodes;
 };
 

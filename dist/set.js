@@ -44,7 +44,6 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    {
 
                
                 
-                                 
                               
 
   async initializeIpfs()               {

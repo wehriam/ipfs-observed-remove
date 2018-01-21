@@ -9,16 +9,9 @@ const expect = require('expect');
 jest.setTimeout(30000);
 
 let nodes = [];
-let stopSwarm = () => {};
 
 beforeAll(async () => {
-  [nodes, stopSwarm] = await getSwarm(2);
-});
-
-afterAll(async () => {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  await stopSwarm();
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  nodes = await getSwarm(2);
 });
 
 test('Synchronize sets', async () => {
