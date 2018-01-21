@@ -32,6 +32,7 @@ class IpfsObservedRemoveSet<T> extends ObservedRemoveSet<T> {
     this.ipfs = ipfs;
     this.topic = topic;
     this.readyPromise = this.initializeIpfs();
+    this.sendJoinMessage();
   }
 
   /**
@@ -62,16 +63,32 @@ class IpfsObservedRemoveSet<T> extends ObservedRemoveSet<T> {
       if (message.from === ipfsId) {
         return;
       }
-      const remoteHash = message.data.toString();
+      const remoteHash = message.data.toString('utf8');
       const remoteFiles = await this.ipfs.files.get(remoteHash);
       const queue = JSON.parse(remoteFiles[0].content.toString('utf8'));
       const beforeHash = await this.getIpfsHash();
       this.process(queue);
       const afterHash = await this.getIpfsHash();
       if (beforeHash !== afterHash && afterHash !== remoteHash) {
-        this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(afterHash));
+        this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(afterHash, 'utf8'));
       }
     });
+    await this.ipfs.pubsub.subscribe(`${this.topic}:join`, { discover: true }, async (message:{from:string, data:Buffer}) => {
+      if (message.from === ipfsId) {
+        return;
+      }
+      const peerId = message.data.toString('utf8');
+      if (ipfsId === peerId) {
+        this.ipfsSync();
+      }
+    });
+  }
+
+  async sendJoinMessage():Promise<void> {
+    await this.waitForIpfsPeers();
+    const peerIds = await this.ipfs.pubsub.peers(this.topic);
+    const peerId = peerIds[Math.floor(Math.random() * peerIds.length)];
+    this.ipfs.pubsub.publish(`${this.topic}:join`, Buffer.from(peerId, 'utf8'));
   }
 
   /**
@@ -79,7 +96,7 @@ class IpfsObservedRemoveSet<T> extends ObservedRemoveSet<T> {
    * @return {Array<Array<any>>}
    */
   async ipfsSync():Promise<void> {
-    this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(await this.getIpfsHash()));
+    this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(await this.getIpfsHash(), 'utf8'));
   }
 
   /**

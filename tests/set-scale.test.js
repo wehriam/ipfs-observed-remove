@@ -100,3 +100,26 @@ test(`Synchronizes ${COUNT} sets`, async () => {
   await Promise.all(cDeletePromises);
 });
 
+test(`Synchronizes ${COUNT} sets automatically`, async () => {
+  const topic = uuid.v4();
+  const sets = [new IpfsObservedRemoveSet(nodes[0], topic, [generateValue()])];
+  await sets[0].readyPromise;
+  const addPromises = [];
+  for (let i = 1; i < nodes.length; i += 1) {
+    const set = new IpfsObservedRemoveSet(nodes[i], topic);
+    sets.push(set);
+    addPromises.push(new Promise((resolve) => {
+      const handler = () => {
+        set.removeListener('add', handler);
+        resolve();
+      };
+      set.on('add', handler);
+    }));
+  }
+  await Promise.all(sets.map((set) => set.readyPromise));
+  await Promise.all(addPromises);
+  const dump = sets[0].dump();
+  for (let i = 1; i < sets.length; i += 1) {
+    expect(sets[i].dump()).toEqual(dump);
+  }
+});

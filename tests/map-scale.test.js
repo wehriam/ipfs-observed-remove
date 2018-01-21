@@ -103,3 +103,27 @@ test(`Synchronizes ${COUNT} maps`, async () => {
   await Promise.all(cDeletePromises);
 });
 
+test(`Synchronizes ${COUNT} maps automatically`, async () => {
+  const topic = uuid.v4();
+  const maps = [new IpfsObservedRemoveMap(nodes[0], topic, [[uuid.v4(), generateValue()]])];
+  await maps[0].readyPromise;
+  const setPromises = [];
+  for (let i = 1; i < nodes.length; i += 1) {
+    const map = new IpfsObservedRemoveMap(nodes[i], topic);
+    maps.push(map);
+    setPromises.push(new Promise((resolve) => {
+      const handler = () => {
+        map.removeListener('set', handler);
+        resolve();
+      };
+      map.on('set', handler);
+    }));
+  }
+  await Promise.all(maps.map((set) => set.readyPromise));
+  await Promise.all(setPromises);
+  const dump = maps[0].dump();
+  for (let i = 1; i < maps.length; i += 1) {
+    expect(maps[i].dump()).toEqual(dump);
+  }
+});
+
