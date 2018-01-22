@@ -125,19 +125,10 @@ test('Synchronize mixed maps using sync', async () => {
   const valueY = generateValue();
   const valueZ = generateValue();
   const alice = new IpfsObservedRemoveMap(nodes[0], topic, [[keyA, valueA], [keyB, valueB], [keyC, valueC]]);
+  await alice.readyPromise;
   const bob = new IpfsObservedRemoveMap(nodes[1], topic, [[keyX, valueX], [keyY, valueY], [keyZ, valueZ]]);
-  await Promise.all([alice.readyPromise, bob.readyPromise]);
-  const bobSetPromise = new Promise((resolve) => {
-    bob.once('set', () => {
-      resolve();
-    });
-  });
-  const aliceSetPromise = new Promise((resolve) => {
-    alice.once('set', () => {
-      resolve();
-    });
-  });
-  alice.ipfsSync();
-  await Promise.all([bobSetPromise, aliceSetPromise]);
+  await bob.readyPromise;
+  expect(alice.dump()).not.toEqual(bob.dump());
+  await new Promise((resolve) => setTimeout(resolve, 250));
   expect(alice.dump()).toEqual(bob.dump());
 });

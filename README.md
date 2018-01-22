@@ -1,4 +1,4 @@
-\#IPFS Observed-Remove Set and Map
+# IPFS Observed-Remove Set and Map
 
 [![CircleCI](https://circleci.com/gh/wehriam/ipfs-observed-remove.svg?style=svg)](https://circleci.com/gh/wehriam/ipfs-observed-remove) [![npm version](https://badge.fury.io/js/ipfs-observed-remove.svg)](http://badge.fury.io/js/ipfs-observed-remove) [![codecov](https://codecov.io/gh/wehriam/ipfs-observed-remove/branch/master/graph/badge.svg)](https://codecov.io/gh/wehriam/ipfs-observed-remove)
 

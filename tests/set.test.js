@@ -96,7 +96,7 @@ test('Synchronize add and delete events', async () => {
   await bobDeleteYPromise;
 });
 
-test('Synchronize mixed sets using sync', async () => {
+test('Automatically synchronize mixed sets', async () => {
   const topic = uuid.v4();
   const A = generateValue();
   const B = generateValue();
@@ -105,20 +105,11 @@ test('Synchronize mixed sets using sync', async () => {
   const Y = generateValue();
   const Z = generateValue();
   const alice = new IpfsObservedRemoveSet(nodes[0], topic, [A, B, C]);
+  await alice.readyPromise;
   const bob = new IpfsObservedRemoveSet(nodes[1], topic, [X, Y, Z]);
-  await Promise.all([alice.readyPromise, bob.readyPromise]);
-  const bobSetPromise = new Promise((resolve) => {
-    bob.once('add', () => {
-      resolve();
-    });
-  });
-  const aliceSetPromise = new Promise((resolve) => {
-    alice.once('add', () => {
-      resolve();
-    });
-  });
-  alice.ipfsSync();
-  await Promise.all([bobSetPromise, aliceSetPromise]);
+  await bob.readyPromise;
+  expect(alice.dump()).not.toEqual(bob.dump());
+  await new Promise((resolve) => setTimeout(resolve, 250));
   expect(alice.dump()).toEqual(bob.dump());
 });
 
