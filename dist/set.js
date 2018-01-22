@@ -85,8 +85,7 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    {
   }
 
   async sendJoinMessage()               {
-    await this.waitForIpfsPeers();
-    const peerIds = await this.ipfs.pubsub.peers(this.topic);
+    const peerIds = await this.waitForIpfsPeers();
     const peerId = peerIds[Math.floor(Math.random() * peerIds.length)];
     this.ipfs.pubsub.publish(`${this.topic}:join`, Buffer.from(peerId, 'utf8'));
   }
@@ -129,15 +128,16 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    {
   }
 
   /**
-   * Resolves after one or more IPFS peers connects. Useful for testing.
+   * Resolves an array of peer ids after one or more IPFS peers connects. Useful for testing.
    * @return {Promise<void>}
    */
-  async waitForIpfsPeers()               {
-    let ipfsPeerCount = await this.ipfsPeerCount();
-    while (ipfsPeerCount === 0) {
+  async waitForIpfsPeers()                        {
+    let peerIds = await this.ipfs.pubsub.peers(this.topic);
+    while (peerIds.length === 0) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      ipfsPeerCount = await this.ipfsPeerCount();
+      peerIds = await this.ipfs.pubsub.peers(this.topic);
     }
+    return peerIds;
   }
 
   /**
@@ -145,8 +145,8 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    {
    * @return {number}
    */
   async ipfsPeerCount()                 {
-    const peers = await this.ipfs.pubsub.peers(this.topic);
-    return peers.length;
+    const peerIds = await this.ipfs.pubsub.peers(this.topic);
+    return peerIds.length;
   }
 }
 

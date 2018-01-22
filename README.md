@@ -131,7 +131,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 #### waitForIpfsPeers
 
-Resolves after one or more IPFS peers connects. Useful for testing.
+Resolves an array of peer ids after one or more IPFS peers connects. Useful for testing.
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;void>** 
 
@@ -198,7 +198,7 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 
 #### waitForIpfsPeers
 
-Resolves after one or more IPFS peers connects. Useful for testing.
+Resolves an array of peer ids after one or more IPFS peers connects. Useful for testing.
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;void>** 
 
