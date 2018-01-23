@@ -1,6 +1,6 @@
 //      
 
-const { ObservedRemoveMap } = require('observed-remove/src');
+const { ObservedRemoveMap } = require('observed-remove');
 const { gzip, gunzip } = require('./lib/gzip');
 
                 
