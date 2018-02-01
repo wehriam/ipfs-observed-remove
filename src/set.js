@@ -8,6 +8,8 @@ type Options = {
   bufferPublishing?:number
 };
 
+const notSubscribedRegex = /Not subscribed/;
+
 /**
  * Class representing a IPFS Observed Remove Set
  *
@@ -137,10 +139,29 @@ class IpfsObservedRemoveSet<T> extends ObservedRemoveSet<T> {
    */
   async shutdown():Promise<void> {
     this.active = false;
+    // Catch exceptions here as pubsub is sometimes closed by process kill signals.
     if (this.ipfsId) {
-      this.ipfs.pubsub.unsubscribe(this.topic, this.boundHandleQueueMessage);
-      this.ipfs.pubsub.unsubscribe(`${this.topic}:hash`, this.boundHandleHashMessage);
-      this.ipfs.pubsub.unsubscribe(`${this.topic}:join`, this.boundHandleJoinMessage);
+      try {
+        this.ipfs.pubsub.unsubscribe(this.topic, this.boundHandleQueueMessage);
+      } catch (error) {
+        if (!notSubscribedRegex.test(error.message)) {
+          throw error;
+        }
+      }
+      try {
+        this.ipfs.pubsub.unsubscribe(`${this.topic}:hash`, this.boundHandleHashMessage);
+      } catch (error) {
+        if (!notSubscribedRegex.test(error.message)) {
+          throw error;
+        }
+      }
+      try {
+        this.ipfs.pubsub.unsubscribe(`${this.topic}:join`, this.boundHandleJoinMessage);
+      } catch (error) {
+        if (!notSubscribedRegex.test(error.message)) {
+          throw error;
+        }
+      }
     }
   }
 
