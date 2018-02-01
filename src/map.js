@@ -66,12 +66,19 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> {
   }
 
   async sendJoinMessage():Promise<void> {
-    const peerIds = await this.waitForIpfsPeers();
-    if (peerIds.length === 0) {
-      return;
+    try {
+      const peerIds = await this.waitForIpfsPeers();
+      if (peerIds.length === 0) {
+        return;
+      }
+      const peerId = peerIds[Math.floor(Math.random() * peerIds.length)];
+      this.ipfs.pubsub.publish(`${this.topic}:join`, Buffer.from(peerId, 'utf8'));
+    } catch (error) {
+      // IPFS connection is closed, don't send join
+      if (error.code !== 'ECONNREFUSED') {
+        throw error;
+      }
     }
-    const peerId = peerIds[Math.floor(Math.random() * peerIds.length)];
-    this.ipfs.pubsub.publish(`${this.topic}:join`, Buffer.from(peerId, 'utf8'));
   }
 
   /**
