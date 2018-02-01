@@ -101,6 +101,7 @@ test(`Synchronizes ${COUNT} maps`, async () => {
   await Promise.all(bDeletePromises);
   randomMap().delete(keyC);
   await Promise.all(cDeletePromises);
+  maps.forEach((map) => map.shutdown());
 });
 
 test(`Synchronizes ${COUNT} maps automatically`, async () => {
@@ -125,5 +126,6 @@ test(`Synchronizes ${COUNT} maps automatically`, async () => {
   for (let i = 1; i < maps.length; i += 1) {
     expect(maps[i].dump()).toEqual(dump);
   }
+  maps.forEach((map) => map.shutdown());
 });
 

@@ -2143,9 +2143,9 @@ diff@^3.2.0:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/diff/-/diff-3.4.0.tgz#b1d85507daf3964828de54b37d0d73ba67dda56c"
 
-directed-graph-map@^1.2.2:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/directed-graph-map/-/directed-graph-map-1.2.2.tgz#cc8dd0f3e3a78b58acbefde19ba31d00066e0f11"
+directed-graph-map@^1.2.3:
+  version "1.2.3"
+  resolved "https://registry.yarnpkg.com/directed-graph-map/-/directed-graph-map-1.2.3.tgz#d820730569578a8bdd602b19d2b27809746b501e"
 
 disparity@^2.0.0:
   version "2.0.0"
@@ -6221,11 +6221,11 @@ object.pick@^1.3.0:
   dependencies:
     isobject "^3.0.1"
 
-observed-remove@1.4.0:
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/observed-remove/-/observed-remove-1.4.0.tgz#37225f046fb20ddb25c3b639ef39f72cc31ac8af"
+observed-remove@^1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/observed-remove/-/observed-remove-1.4.1.tgz#91c2765ab8e71e7351734d822caa9f961baf6b69"
   dependencies:
-    directed-graph-map "^1.2.2"
+    directed-graph-map "^1.2.3"
     json-stringify-deterministic "^1.0.1"
     murmur-hash "^1.0.0"
 

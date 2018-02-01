@@ -90,6 +90,7 @@ bob.get('a'); // 1
     -   [getIpfsHash](#getipfshash)
     -   [waitForIpfsPeers](#waitforipfspeers)
     -   [ipfsPeerCount](#ipfspeercount)
+    -   [shutdown](#shutdown)
 -   [IpfsObservedRemoveSet#readyPromise](#ipfsobservedremovesetreadypromise)
 
 ### IpfsObservedRemoveSet
@@ -141,6 +142,12 @@ Current number of IPFS pubsub peers.
 
 Returns **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** 
 
+#### shutdown
+
+Gracefully shutdown
+
+Returns **void** 
+
 ### IpfsObservedRemoveSet#readyPromise
 
 Resolves when IPFS topic subscriptions are confirmed.
@@ -157,6 +164,7 @@ Resolves when IPFS topic subscriptions are confirmed.
     -   [getIpfsHash](#getipfshash)
     -   [waitForIpfsPeers](#waitforipfspeers)
     -   [ipfsPeerCount](#ipfspeercount)
+    -   [shutdown](#shutdown)
 -   [IpfsObservedRemoveSet#readyPromise](#ipfsobservedremovesetreadypromise)
 
 ### IpfsObservedRemoveMap
@@ -207,6 +215,12 @@ Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/
 Current number of IPFS pubsub peers.
 
 Returns **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** 
+
+#### shutdown
+
+Gracefully shutdown
+
+Returns **void** 
 
 ### IpfsObservedRemoveSet#readyPromise
 

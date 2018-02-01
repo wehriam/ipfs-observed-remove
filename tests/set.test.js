@@ -46,6 +46,8 @@ test('Synchronize sets', async () => {
   }
   expect([...alice]).toEqual([]);
   expect([...bob]).toEqual([]);
+  alice.shutdown();
+  bob.shutdown();
 });
 
 
@@ -94,6 +96,8 @@ test('Synchronize add and delete events', async () => {
   await bobAddYPromise;
   alice.delete(Y);
   await bobDeleteYPromise;
+  alice.shutdown();
+  bob.shutdown();
 });
 
 test('Automatically synchronize mixed sets', async () => {
@@ -111,5 +115,7 @@ test('Automatically synchronize mixed sets', async () => {
   expect(alice.dump()).not.toEqual(bob.dump());
   await new Promise((resolve) => setTimeout(resolve, 250));
   expect(alice.dump()).toEqual(bob.dump());
+  alice.shutdown();
+  bob.shutdown();
 });
 

@@ -98,6 +98,7 @@ test(`Synchronizes ${COUNT} sets`, async () => {
   await Promise.all(bDeletePromises);
   randomSet().delete(C);
   await Promise.all(cDeletePromises);
+  sets.forEach((set) => set.shutdown());
 });
 
 test(`Synchronizes ${COUNT} sets automatically`, async () => {
@@ -122,4 +123,5 @@ test(`Synchronizes ${COUNT} sets automatically`, async () => {
   for (let i = 1; i < sets.length; i += 1) {
     expect(sets[i].dump()).toEqual(dump);
   }
+  sets.forEach((set) => set.shutdown());
 });

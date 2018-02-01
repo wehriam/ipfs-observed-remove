@@ -61,6 +61,8 @@ test('Synchronize maps', async () => {
   expect(bob.get(keyZ)).toBeUndefined();
   expect([...alice]).toEqual([]);
   expect([...bob]).toEqual([]);
+  alice.shutdown();
+  bob.shutdown();
 });
 
 test('Synchronize set and delete events', async () => {
@@ -108,6 +110,8 @@ test('Synchronize set and delete events', async () => {
   await bobSetYPromise;
   alice.delete(keyY);
   await bobDeleteYPromise;
+  alice.shutdown();
+  bob.shutdown();
 });
 
 test('Synchronize mixed maps using sync', async () => {
@@ -131,4 +135,7 @@ test('Synchronize mixed maps using sync', async () => {
   expect(alice.dump()).not.toEqual(bob.dump());
   await new Promise((resolve) => setTimeout(resolve, 250));
   expect(alice.dump()).toEqual(bob.dump());
+  alice.shutdown();
+  bob.shutdown();
 });
+
