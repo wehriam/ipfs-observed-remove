@@ -9,6 +9,15 @@ type Options = {
   format?: string
 };
 
+export type IpfsCrdtType = {
+  initializeIpfs(): Promise<void>,
+  sendJoinMessage(): Promise<void>,
+  ipfsSync(): Promise<void>,
+  getIpfsHash(): Promise<string>,
+  waitForIpfsPeers():Promise<Array<string>>,
+  ipfsPeerCount(): Promise<number>,
+  shutdown(): void
+};
 
 const notSubscribedRegex = /Not subscribed/;
 

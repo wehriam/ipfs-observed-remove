@@ -1,9 +1,12 @@
 //      
 
                                                                                                   
+                                            
 
 const getIpfsClass = require('./mixin');
 const SignedObservedRemoveSet                                       = require('observed-remove').SignedObservedRemoveSet;
 
-module.exports = getIpfsClass(SignedObservedRemoveSet);
+const IpfsSignedObservedRemoveSet                                                       = getIpfsClass(SignedObservedRemoveSet);
+
+module.exports = IpfsSignedObservedRemoveSet;
 
