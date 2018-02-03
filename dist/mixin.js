@@ -11,25 +11,6 @@ const { gzip, gunzip } = require('./lib/gzip');
 
 const notSubscribedRegex = /Not subscribed/;
 
-                            
-               
-                
-                              
-                  
-                 
-                                                                                 
-                                                                                
-                                                                                
-                                                                                        
-                                  
-                                   
-                            
-                                 
-                                            
-                                   
-                   
- 
-
 /**
  * Create an observed-remove CRDT.
  * @param {Object} [C] iterable object.

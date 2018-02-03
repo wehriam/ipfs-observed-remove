@@ -11,25 +11,6 @@ type Options = {
 
 const notSubscribedRegex = /Not subscribed/;
 
-declare class IpfsCrdtType {
-  ipfs: Object;
-  topic: string;
-  readyPromise: Promise<void>;
-  active: boolean;
-  ipfsId: string;
-  boundHandleQueueMessage: (message:{from:string, data:Buffer}) => Promise<void>;
-  boundHandleHashMessage: (message:{from:string, data:Buffer}) => Promise<void>;
-  boundHandleJoinMessage: (message:{from:string, data:Buffer}) => Promise<void>;
-  constructor(ipfs:Object, topic:string, entries?: Iterable<*>, options?:Options): void;
-  initializeIpfs(): Promise<void>;
-  sendJoinMessage(): Promise<void>;
-  ipfsSync(): Promise<void>;
-  getIpfsHash(): Promise<string>;
-  waitForIpfsPeers():Promise<Array<string>>;
-  ipfsPeerCount(): Promise<number>;
-  shutdown(): void;
-}
-
 /**
  * Create an observed-remove CRDT.
  * @param {Object} [C] iterable object.
