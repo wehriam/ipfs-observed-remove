@@ -11,11 +11,30 @@ const { gzip, gunzip } = require('./lib/gzip');
 
 const notSubscribedRegex = /Not subscribed/;
 
+                            
+               
+                
+                              
+                  
+                 
+                                                                                 
+                                                                                
+                                                                                
+                                                                                        
+                                  
+                                   
+                            
+                                 
+                                            
+                                   
+                   
+ 
+
 /**
  * Create an observed-remove CRDT.
  * @param {Object} [C] iterable object.
  */
-function getIpfsClass            (X  ) {
+function getIpfsClass            (X  )          {
   return class IpfsCrdt extends X {
   /**
    * Create an observed-remove CRDT.
