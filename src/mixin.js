@@ -59,7 +59,15 @@ const getIpfsClass = (C:Class<*>) => class IpfsCrdt extends C {
   async initializeIpfs():Promise<void> {
     this.ipfsId = (await this.ipfs.id()).id;
     this.on('publish', async (queue) => {
-      this.ipfs.pubsub.publish(this.topic, await gzip(JSON.stringify(queue)));
+      try {
+        this.ipfs.pubsub.publish(this.topic, await gzip(JSON.stringify(queue)));
+      } catch (error) {
+        if (this.listenerCount('error') > 0) {
+          this.emit('error', error);
+        } else {
+          throw error;
+        }
+      }
     });
     await this.ipfs.pubsub.subscribe(this.topic, { discover: true }, this.boundHandleQueueMessage);
     await this.ipfs.pubsub.subscribe(`${this.topic}:hash`, { discover: true }, this.boundHandleHashMessage);
@@ -145,7 +153,7 @@ const getIpfsClass = (C:Class<*>) => class IpfsCrdt extends C {
    * Gracefully shutdown
    * @return {void}
    */
-  async shutdown():Promise<void> {
+  shutdown(): void {
     this.active = false;
     // Catch exceptions here as pubsub is sometimes closed by process kill signals.
     if (this.ipfsId) {
@@ -174,35 +182,59 @@ const getIpfsClass = (C:Class<*>) => class IpfsCrdt extends C {
   }
 
   async handleQueueMessage(message:{from:string, data:Buffer}) {
-    if (message.from === this.ipfsId) {
-      return;
+    try {
+      if (message.from === this.ipfsId) {
+        return;
+      }
+      const queue = JSON.parse(await gunzip(message.data));
+      this.process(queue);
+    } catch (error) {
+      if (this.listenerCount('error') > 0) {
+        this.emit('error', error);
+      } else {
+        throw error;
+      }
     }
-    const queue = JSON.parse(await gunzip(message.data));
-    this.process(queue);
   }
 
   async handleHashMessage(message:{from:string, data:Buffer}) {
-    if (message.from === this.ipfsId) {
-      return;
-    }
-    const remoteHash = message.data.toString('utf8');
-    const remoteFiles = await this.ipfs.files.get(remoteHash);
-    const queue = JSON.parse(remoteFiles[0].content.toString('utf8'));
-    const beforeHash = await this.getIpfsHash();
-    this.process(queue);
-    const afterHash = await this.getIpfsHash();
-    if (beforeHash !== afterHash && afterHash !== remoteHash) {
-      this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(afterHash, 'utf8'));
+    try {
+      if (message.from === this.ipfsId) {
+        return;
+      }
+      const remoteHash = message.data.toString('utf8');
+      const remoteFiles = await this.ipfs.files.get(remoteHash);
+      const queue = JSON.parse(remoteFiles[0].content.toString('utf8'));
+      const beforeHash = await this.getIpfsHash();
+      this.process(queue);
+      const afterHash = await this.getIpfsHash();
+      if (beforeHash !== afterHash && afterHash !== remoteHash) {
+        this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(afterHash, 'utf8'));
+      }
+    } catch (error) {
+      if (this.listenerCount('error') > 0) {
+        this.emit('error', error);
+      } else {
+        throw error;
+      }
     }
   }
 
   async handleJoinMessage(message:{from:string, data:Buffer}) {
-    if (message.from === this.ipfsId) {
-      return;
-    }
-    const peerId = message.data.toString('utf8');
-    if (this.ipfsId === peerId) {
-      this.ipfsSync();
+    try {
+      if (message.from === this.ipfsId) {
+        return;
+      }
+      const peerId = message.data.toString('utf8');
+      if (this.ipfsId === peerId) {
+        this.ipfsSync();
+      }
+    } catch (error) {
+      if (this.listenerCount('error') > 0) {
+        this.emit('error', error);
+      } else {
+        throw error;
+      }
     }
   }
 };
