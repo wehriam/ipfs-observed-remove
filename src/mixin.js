@@ -4,7 +4,9 @@ const { gzip, gunzip } = require('./lib/gzip');
 
 type Options = {
   maxAge?:number,
-  bufferPublishing?:number
+  bufferPublishing?:number,
+  key?: any,
+  format?: string
 };
 
 
