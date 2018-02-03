@@ -9,23 +9,14 @@ const { gzip, gunzip } = require('./lib/gzip');
                  
   
 
-                            
-                                  
-                                   
-                            
-                                 
-                                            
-                                   
-                  
-  
-
 const notSubscribedRegex = /Not subscribed/;
 
 /**
  * Create an observed-remove CRDT.
  * @param {Object} [C] iterable object.
  */
-const getIpfsClass = (C         ) => class IpfsCrdt extends C {
+function getIpfsClass            (X  ) {
+  return class IpfsCrdt extends X {
   /**
    * Create an observed-remove CRDT.
    * @param {Object} [ipfs] Object implementing the [core IPFS API](https://github.com/ipfs/interface-ipfs-core#api), most likely a [js-ipfs](https://github.com/ipfs/js-ipfs) or [js-ipfs-api](https://github.com/ipfs/js-ipfs-api) object.
@@ -35,17 +26,17 @@ const getIpfsClass = (C         ) => class IpfsCrdt extends C {
    * @param {String} [options.maxAge=5000] Max age of insertion/deletion identifiers
    * @param {String} [options.bufferPublishing=20] Interval by which to buffer 'publish' events
    */
-  constructor(ipfs       , topic       , entries              , options          = {}) {
-    super(entries, options);
-    this.ipfs = ipfs;
-    this.topic = topic;
-    this.active = true;
-    this.boundHandleQueueMessage = this.handleQueueMessage.bind(this);
-    this.boundHandleHashMessage = this.handleHashMessage.bind(this);
-    this.boundHandleJoinMessage = this.handleJoinMessage.bind(this);
-    this.readyPromise = this.initializeIpfs();
-    this.sendJoinMessage();
-  }
+    constructor(ipfs       , topic       , entries              , options          = {}) {
+      super(entries, options);
+      this.ipfs = ipfs;
+      this.topic = topic;
+      this.active = true;
+      this.boundHandleQueueMessage = this.handleQueueMessage.bind(this);
+      this.boundHandleHashMessage = this.handleHashMessage.bind(this);
+      this.boundHandleJoinMessage = this.handleJoinMessage.bind(this);
+      this.readyPromise = this.initializeIpfs();
+      this.sendJoinMessage();
+    }
 
   /**
    * Resolves when IPFS topic subscriptions are confirmed.
@@ -246,6 +237,7 @@ const getIpfsClass = (C         ) => class IpfsCrdt extends C {
       }
     }
   }
-};
+  };
+}
 
 module.exports = getIpfsClass;
