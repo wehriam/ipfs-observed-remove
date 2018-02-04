@@ -123,8 +123,8 @@ class IpfsSignedObservedRemoveMap<K, V> extends SignedObservedRemoveMap<K, V> { 
   async waitForIpfsPeers():Promise<Array<string>> {
     let peerIds = await this.ipfs.pubsub.peers(this.topic);
     while (this.active && peerIds.length === 0) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
       peerIds = await this.ipfs.pubsub.peers(this.topic);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
     return peerIds;
   }
