@@ -64,6 +64,6 @@
   },
   "dependencies": {
     "flow-copy-source": "^1.2.2",
-    "observed-remove": "1.5.4"
+    "observed-remove": "1.5.5"
   }
 }
