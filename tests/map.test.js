@@ -23,8 +23,8 @@ describe('IPFS Map', () => {
     const valueX = generateValue();
     const valueY = generateValue();
     const valueZ = generateValue();
-    const alice = new IpfsObservedRemoveMap(nodes[0], topic);
-    const bob = new IpfsObservedRemoveMap(nodes[1], topic);
+    const alice: IpfsObservedRemoveMap<string, Object> = new IpfsObservedRemoveMap(nodes[0], topic);
+    const bob: IpfsObservedRemoveMap<string, Object> = new IpfsObservedRemoveMap(nodes[1], topic);
     await Promise.all([alice.readyPromise, bob.readyPromise]);
     let aliceAddCount = 0;
     let bobAddCount = 0;

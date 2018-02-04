@@ -20,8 +20,8 @@ describe('IPFS Set', () => {
     const X = generateValue();
     const Y = generateValue();
     const Z = generateValue();
-    const alice = new IpfsObservedRemoveSet(nodes[0], topic);
-    const bob = new IpfsObservedRemoveSet(nodes[1], topic);
+    const alice: IpfsObservedRemoveSet<string> = new IpfsObservedRemoveSet(nodes[0], topic);
+    const bob: IpfsObservedRemoveSet<string> = new IpfsObservedRemoveSet(nodes[1], topic);
     await Promise.all([alice.readyPromise, bob.readyPromise]);
     let aliceAddCount = 0;
     let bobAddCount = 0;

@@ -1,6 +1,8 @@
 // @flow
 
+
 const { gzip, gunzip } = require('./lib/gzip');
+const { ObservedRemoveSet } = require('observed-remove');
 
 type Options = {
   maxAge?:number,
@@ -11,12 +13,7 @@ type Options = {
 
 const notSubscribedRegex = /Not subscribed/;
 
-/**
- * Create an observed-remove CRDT.
- * @param {Object} [C] iterable object.
- */
-function getIpfsClass<C:Class<*>>(X:C):Class<*> {
-  return class IpfsCrdt extends X {
+class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-line no-unused-vars
   /**
    * Create an observed-remove CRDT.
    * @param {Object} [ipfs] Object implementing the [core IPFS API](https://github.com/ipfs/interface-ipfs-core#api), most likely a [js-ipfs](https://github.com/ipfs/js-ipfs) or [js-ipfs-api](https://github.com/ipfs/js-ipfs-api) object.
@@ -26,17 +23,17 @@ function getIpfsClass<C:Class<*>>(X:C):Class<*> {
    * @param {String} [options.maxAge=5000] Max age of insertion/deletion identifiers
    * @param {String} [options.bufferPublishing=20] Interval by which to buffer 'publish' events
    */
-    constructor(ipfs:Object, topic:string, entries?: Iterable<*>, options?:Options = {}) {
-      super(entries, options);
-      this.ipfs = ipfs;
-      this.topic = topic;
-      this.active = true;
-      this.boundHandleQueueMessage = this.handleQueueMessage.bind(this);
-      this.boundHandleHashMessage = this.handleHashMessage.bind(this);
-      this.boundHandleJoinMessage = this.handleJoinMessage.bind(this);
-      this.readyPromise = this.initializeIpfs();
-      this.sendJoinMessage();
-    }
+  constructor(ipfs:Object, topic:string, entries?: Iterable<V>, options?:Options = {}) {
+    super(entries, options);
+    this.ipfs = ipfs;
+    this.topic = topic;
+    this.active = true;
+    this.boundHandleQueueMessage = this.handleQueueMessage.bind(this);
+    this.boundHandleHashMessage = this.handleHashMessage.bind(this);
+    this.boundHandleJoinMessage = this.handleJoinMessage.bind(this);
+    this.readyPromise = this.initializeIpfs();
+    this.sendJoinMessage();
+  }
 
   /**
    * Resolves when IPFS topic subscriptions are confirmed.
@@ -99,22 +96,15 @@ function getIpfsClass<C:Class<*>>(X:C):Class<*> {
   }
 
   /**
-   * Return a sorted array containing all of the object's insertions and deletions.
-   * @return {Array<Array<any>>}
+   * Return a sorted array containing all of the set's insertions and deletions.
+   * @return {[Array<*>, Array<*>]>}
    */
   dump() {
     this.flush();
-    const data = super.dump();
-    data.sort((x, y) => {
-      if (x[0] !== y[0]) {
-        return x[0] > y[0] ? -1 : 1;
-      }
-      if (!!x[1] !== !!y[1]) {
-        return x[1] ? 1 : -1;
-      }
-      return 0;
-    });
-    return data;
+    const [insertQueue, deleteQueue] = super.dump();
+    deleteQueue.sort((x, y) => (x[0] > y[0] ? -1 : 1));
+    insertQueue.sort((x, y) => (x[0] > y[0] ? -1 : 1));
+    return [insertQueue, deleteQueue];
   }
 
   /**
@@ -237,7 +227,7 @@ function getIpfsClass<C:Class<*>>(X:C):Class<*> {
       }
     }
   }
-  };
 }
 
-module.exports = getIpfsClass;
+
+module.exports = IpfsObservedRemoveSet;

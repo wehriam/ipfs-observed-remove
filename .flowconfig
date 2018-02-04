@@ -9,3 +9,4 @@
 flow/
 
 [options]
+traces=3
