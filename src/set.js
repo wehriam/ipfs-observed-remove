@@ -52,12 +52,32 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
   boundHandleHashMessage: (message:{from:string, data:Buffer}) => Promise<void>;
   boundHandleJoinMessage: (message:{from:string, data:Buffer}) => Promise<void>;
 
+  /**
+   * Return a sorted array containing all of the set's insertions and deletions.
+   * @return {[Array<*>, Array<*>]>}
+   */
+  dump() {
+    this.flush();
+    const [insertQueue, deleteQueue] = super.dump();
+    deleteQueue.sort((x, y) => (x[0] > y[0] ? -1 : 1));
+    insertQueue.sort((x, y) => (x[0] > y[0] ? -1 : 1));
+    return [insertQueue, deleteQueue];
+  }
 
   async initializeIpfs():Promise<void> {
     this.ipfsId = (await this.ipfs.id()).id;
     this.on('publish', async (queue) => {
       try {
-        this.ipfs.pubsub.publish(this.topic, await gzip(JSON.stringify(queue)));
+        const message = await gzip(JSON.stringify(queue));
+        await new Promise((resolve, reject) => {
+          this.ipfs.pubsub.publish(this.topic, message, (error) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve();
+            }
+          });
+        });
       } catch (error) {
         if (this.listenerCount('error') > 0) {
           this.emit('error', error);
@@ -78,7 +98,15 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
         return;
       }
       const peerId = peerIds[Math.floor(Math.random() * peerIds.length)];
-      this.ipfs.pubsub.publish(`${this.topic}:join`, Buffer.from(peerId, 'utf8'));
+      await new Promise((resolve, reject) => {
+        this.ipfs.pubsub.publish(`${this.topic}:join`, Buffer.from(peerId, 'utf8'), (error) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve();
+          }
+        });
+      });
     } catch (error) {
       // IPFS connection is closed, don't send join
       if (error.code !== 'ECONNREFUSED') {
@@ -92,19 +120,16 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
    * @return {Array<Array<any>>}
    */
   async ipfsSync():Promise<void> {
-    this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(await this.getIpfsHash(), 'utf8'));
-  }
-
-  /**
-   * Return a sorted array containing all of the set's insertions and deletions.
-   * @return {[Array<*>, Array<*>]>}
-   */
-  dump() {
-    this.flush();
-    const [insertQueue, deleteQueue] = super.dump();
-    deleteQueue.sort((x, y) => (x[0] > y[0] ? -1 : 1));
-    insertQueue.sort((x, y) => (x[0] > y[0] ? -1 : 1));
-    return [insertQueue, deleteQueue];
+    const message = await this.getIpfsHash();
+    await new Promise((resolve, reject) => {
+      this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(message, 'utf8'), (error) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve();
+        }
+      });
+    });
   }
 
   /**
@@ -199,7 +224,15 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
       this.process(queue);
       const afterHash = await this.getIpfsHash();
       if (beforeHash !== afterHash && afterHash !== remoteHash) {
-        this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(afterHash, 'utf8'));
+        await new Promise((resolve, reject) => {
+          this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(afterHash, 'utf8'), (error) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve();
+            }
+          });
+        });
       }
     } catch (error) {
       if (this.listenerCount('error') > 0) {
@@ -217,7 +250,7 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
       }
       const peerId = message.data.toString('utf8');
       if (this.ipfsId === peerId) {
-        this.ipfsSync();
+        await this.ipfsSync();
       }
     } catch (error) {
       if (this.listenerCount('error') > 0) {
