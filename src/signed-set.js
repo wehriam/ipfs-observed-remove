@@ -68,15 +68,7 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
     this.on('publish', async (queue) => {
       try {
         const message = await gzip(JSON.stringify(queue));
-        await new Promise((resolve, reject) => {
-          this.ipfs.pubsub.publish(this.topic, message, (error) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve();
-            }
-          });
-        });
+        await this.ipfs.pubsub.publish(this.topic, message);
       } catch (error) {
         if (this.listenerCount('error') > 0) {
           this.emit('error', error);
@@ -97,15 +89,7 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
         return;
       }
       const peerId = peerIds[Math.floor(Math.random() * peerIds.length)];
-      await new Promise((resolve, reject) => {
-        this.ipfs.pubsub.publish(`${this.topic}:join`, Buffer.from(peerId, 'utf8'), (error) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve();
-          }
-        });
-      });
+      await this.ipfs.pubsub.publish(`${this.topic}:join`, Buffer.from(peerId, 'utf8'));
     } catch (error) {
       // IPFS connection is closed, don't send join
       if (error.code !== 'ECONNREFUSED') {
@@ -120,15 +104,7 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
    */
   async ipfsSync():Promise<void> {
     const message = await this.getIpfsHash();
-    await new Promise((resolve, reject) => {
-      this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(message, 'utf8'), (error) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve();
-        }
-      });
-    });
+    await this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(message, 'utf8'));
   }
 
   /**
@@ -223,15 +199,7 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
       this.process(queue);
       const afterHash = await this.getIpfsHash();
       if (beforeHash !== afterHash && afterHash !== remoteHash) {
-        await new Promise((resolve, reject) => {
-          this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(afterHash, 'utf8'), (error) => {
-            if (error) {
-              reject(error);
-            } else {
-              resolve();
-            }
-          });
-        });
+        await this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(afterHash, 'utf8'));
       }
     } catch (error) {
       if (this.listenerCount('error') > 0) {
