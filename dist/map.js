@@ -63,6 +63,12 @@ class IpfsObservedRemoveMap       extends ObservedRemoveMap       { // eslint-di
     return [insertQueue, deleteQueue];
   }
 
+  async loadIpfsHash(hash       )               {
+    const files = await this.ipfs.files.get(hash);
+    const queue = JSON.parse(files[0].content.toString('utf8'));
+    this.process(queue);
+  }
+
   async initializeIpfs()               {
     this.ipfsId = (await this.ipfs.id()).id;
     this.on('publish', async (queue) => {

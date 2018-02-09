@@ -20,6 +20,28 @@ describe('IPFS Signed Set', () => {
     nodes = await getSwarm(2);
   });
 
+  test('Load from a hash', async () => {
+    const topicA = uuid.v4();
+    const topicB = uuid.v4();
+    const A = generateValue();
+    const B = generateValue();
+    const C = generateValue();
+    const idA = generateId();
+    const idB = generateId();
+    const idC = generateId();
+    const alice = new IpfsSignedObservedRemoveSet(nodes[0], topicA, [[A, idA, sign(A, idA)], [B, idB, sign(B, idB)], [C, idC, sign(C, idC)]], { key });
+    await alice.readyPromise;
+    const hash = await alice.getIpfsHash();
+    const bob = new IpfsSignedObservedRemoveSet(nodes[0], topicB, [], { key });
+    await bob.readyPromise;
+    await bob.loadIpfsHash(hash);
+    expect(bob.has(A)).toEqual(true);
+    expect(bob.has(B)).toEqual(true);
+    expect(bob.has(C)).toEqual(true);
+    alice.shutdown();
+    bob.shutdown();
+  });
+
   test('Throw on invalid signatures', () => {
     const topic = uuid.v4();
     let id;

@@ -21,6 +21,31 @@ describe('IPFS Signed Map', () => {
     nodes = await getSwarm(2);
   });
 
+  test('Load from a hash', async () => {
+    const topicA = uuid.v4();
+    const topicB = uuid.v4();
+    const keyA = uuid.v4();
+    const keyB = uuid.v4();
+    const keyC = uuid.v4();
+    const idA = generateId();
+    const idB = generateId();
+    const idC = generateId();
+    const valueA = generateValue();
+    const valueB = generateValue();
+    const valueC = generateValue();
+    const alice = new IpfsSignedObservedRemoveMap(nodes[0], topicA, [[keyA, valueA, idA, sign(keyA, valueA, idA)], [keyB, valueB, idB, sign(keyB, valueB, idB)], [keyC, valueC, idC, sign(keyC, valueC, idC)]], { key });
+    await alice.readyPromise;
+    const hash = await alice.getIpfsHash();
+    const bob = new IpfsSignedObservedRemoveMap(nodes[0], topicB, [], { key });
+    await bob.readyPromise;
+    await bob.loadIpfsHash(hash);
+    expect(bob.get(keyA)).toEqual(valueA);
+    expect(bob.get(keyB)).toEqual(valueB);
+    expect(bob.get(keyC)).toEqual(valueC);
+    alice.shutdown();
+    bob.shutdown();
+  });
+
   test('Throw on invalid signatures', () => {
     const topic = uuid.v4();
     let id;

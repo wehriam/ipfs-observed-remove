@@ -15,6 +15,28 @@ describe('IPFS Map', () => {
     nodes = await getSwarm(2);
   });
 
+  test('Load from a hash', async () => {
+    const topicA = uuid.v4();
+    const topicB = uuid.v4();
+    const keyA = uuid.v4();
+    const keyB = uuid.v4();
+    const keyC = uuid.v4();
+    const valueA = generateValue();
+    const valueB = generateValue();
+    const valueC = generateValue();
+    const alice = new IpfsObservedRemoveMap(nodes[0], topicA, [[keyA, valueA], [keyB, valueB], [keyC, valueC]]);
+    await alice.readyPromise;
+    const hash = await alice.getIpfsHash();
+    const bob = new IpfsObservedRemoveMap(nodes[0], topicB);
+    await bob.readyPromise;
+    await bob.loadIpfsHash(hash);
+    expect(bob.get(keyA)).toEqual(valueA);
+    expect(bob.get(keyB)).toEqual(valueB);
+    expect(bob.get(keyC)).toEqual(valueC);
+    alice.shutdown();
+    bob.shutdown();
+  });
+
   test('Synchronize maps', async () => {
     const topic = uuid.v4();
     const keyX = uuid.v4();

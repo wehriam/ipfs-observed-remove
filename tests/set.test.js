@@ -15,6 +15,25 @@ describe('IPFS Set', () => {
     nodes = await getSwarm(2);
   });
 
+  test('Load from a hash', async () => {
+    const topicA = uuid.v4();
+    const topicB = uuid.v4();
+    const A = generateValue();
+    const B = generateValue();
+    const C = generateValue();
+    const alice = new IpfsObservedRemoveSet(nodes[0], topicA, [A, B, C]);
+    await alice.readyPromise;
+    const hash = await alice.getIpfsHash();
+    const bob = new IpfsObservedRemoveSet(nodes[0], topicB);
+    await bob.readyPromise;
+    await bob.loadIpfsHash(hash);
+    expect(bob.has(A)).toEqual(true);
+    expect(bob.has(B)).toEqual(true);
+    expect(bob.has(C)).toEqual(true);
+    alice.shutdown();
+    bob.shutdown();
+  });
+
   test('Synchronize sets', async () => {
     const topic = uuid.v4();
     const X = generateValue();
