@@ -155,8 +155,7 @@ describe('IPFS Map', () => {
     await alice.readyPromise;
     const bob = new IpfsObservedRemoveMap(nodes[1], topic, [[keyX, valueX], [keyY, valueY], [keyZ, valueZ]]);
     await bob.readyPromise;
-    expect(alice.dump()).not.toEqual(bob.dump());
-    await new Promise((resolve) => setTimeout(resolve, 250));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     expect(alice.dump()).toEqual(bob.dump());
     alice.shutdown();
     bob.shutdown();

@@ -132,8 +132,7 @@ describe('IPFS Set', () => {
     await alice.readyPromise;
     const bob = new IpfsObservedRemoveSet(nodes[1], topic, [X, Y, Z]);
     await bob.readyPromise;
-    expect(alice.dump()).not.toEqual(bob.dump());
-    await new Promise((resolve) => setTimeout(resolve, 250));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     expect(alice.dump()).toEqual(bob.dump());
     alice.shutdown();
     bob.shutdown();

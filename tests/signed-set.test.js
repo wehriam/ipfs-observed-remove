@@ -64,7 +64,7 @@ describe('IPFS Signed Set', () => {
     set.shutdown();
   });
 
-  test('Throw on invalid synchronization', async () => {
+  test('Emit errors on invalid synchronization', async () => {
     const topic = uuid.v4();
     let id;
     let ids;
@@ -78,6 +78,8 @@ describe('IPFS Signed Set', () => {
     const Y = generateValue();
     const alice = new IpfsSignedObservedRemoveSet(nodes[0], topic, [], { key: aliceKey });
     const bob = new IpfsSignedObservedRemoveSet(nodes[1], topic, [], { key: bobKey });
+    await Promise.all([alice.readyPromise, bob.readyPromise]);
+    await new Promise((resolve) => setTimeout(resolve, 500));
     const aliceProcessAddMessage = new Promise((resolve, reject) => {
       alice.once('error', reject);
       alice.once('add', resolve);
@@ -225,8 +227,7 @@ describe('IPFS Signed Set', () => {
     await alice.readyPromise;
     const bob = new IpfsSignedObservedRemoveSet(nodes[1], topic, [[X, idX, sign(X, idX)], [Y, idY, sign(Y, idY)], [Z, idZ, sign(Z, idZ)]], { key });
     await bob.readyPromise;
-    expect(alice.dump()).not.toEqual(bob.dump());
-    await new Promise((resolve) => setTimeout(resolve, 250));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     expect(alice.dump()).toEqual(bob.dump());
     alice.shutdown();
     bob.shutdown();

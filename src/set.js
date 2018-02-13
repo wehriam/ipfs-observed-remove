@@ -32,7 +32,7 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
     this.boundHandleHashMessage = this.handleHashMessage.bind(this);
     this.boundHandleJoinMessage = this.handleJoinMessage.bind(this);
     this.readyPromise = this.initializeIpfs();
-    this.sendJoinMessage();
+    this.processingHash = false;
   }
 
   /**
@@ -51,6 +51,8 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
   boundHandleQueueMessage: (message:{from:string, data:Buffer}) => Promise<void>;
   boundHandleHashMessage: (message:{from:string, data:Buffer}) => Promise<void>;
   boundHandleJoinMessage: (message:{from:string, data:Buffer}) => Promise<void>;
+  ipfsSyncTimeout: TimeoutID;
+  processingHash: boolean;
 
   /**
    * Return a sorted array containing all of the set's insertions and deletions.
@@ -65,14 +67,25 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
   }
 
   async loadIpfsHash(hash:string):Promise<void> {
-    const files = await this.ipfs.files.get(hash);
-    const queue = JSON.parse(files[0].content.toString('utf8'));
-    this.process(queue);
+    try {
+      const files = await this.ipfs.files.get(hash);
+      const queue = JSON.parse(files[0].content.toString('utf8'));
+      this.process(queue);
+    } catch (error) {
+      if (this.listenerCount('error') > 0) {
+        this.emit('error', error);
+      } else {
+        throw error;
+      }
+    }
   }
 
   async initializeIpfs():Promise<void> {
     this.ipfsId = (await this.ipfs.id()).id;
     this.on('publish', async (queue) => {
+      if (!this.active) {
+        return;
+      }
       try {
         const message = await gzip(JSON.stringify(queue));
         await this.ipfs.pubsub.publish(this.topic, message);
@@ -87,6 +100,7 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
     await this.ipfs.pubsub.subscribe(this.topic, { discover: true }, this.boundHandleQueueMessage);
     await this.ipfs.pubsub.subscribe(`${this.topic}:hash`, { discover: true }, this.boundHandleHashMessage);
     await this.ipfs.pubsub.subscribe(`${this.topic}:join`, { discover: true }, this.boundHandleJoinMessage);
+    this.sendJoinMessage();
   }
 
   async sendJoinMessage():Promise<void> {
@@ -95,8 +109,7 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
       if (peerIds.length === 0) {
         return;
       }
-      const peerId = peerIds[Math.floor(Math.random() * peerIds.length)];
-      await this.ipfs.pubsub.publish(`${this.topic}:join`, Buffer.from(peerId, 'utf8'));
+      await this.ipfs.pubsub.publish(`${this.topic}:join`, Buffer.from(this.ipfsId, 'utf8'));
     } catch (error) {
       // IPFS connection is closed, don't send join
       if (error.code !== 'ECONNREFUSED') {
@@ -109,9 +122,22 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
    * Publish an IPFS hash of an array containing all of the object's insertions and deletions.
    * @return {Array<Array<any>>}
    */
-  async ipfsSync():Promise<void> {
-    const message = await this.getIpfsHash();
-    await this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(message, 'utf8'));
+  ipfsSync():void {
+    clearTimeout(this.ipfsSyncTimeout);
+    this.ipfsSyncTimeout = setTimeout(() => this._ipfsSync(), 50); // eslint-disable-line no-underscore-dangle
+  }
+
+  async _ipfsSync():Promise<void> { // eslint-disable-line no-underscore-dangle
+    try {
+      const message = await this.getIpfsHash();
+      await this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(message, 'utf8'));
+    } catch (error) {
+      if (this.listenerCount('error') > 0) {
+        this.emit('error', error);
+      } else {
+        throw error;
+      }
+    }
   }
 
   /**
@@ -179,10 +205,13 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
   }
 
   async handleQueueMessage(message:{from:string, data:Buffer}) {
+    if (!this.active) {
+      return;
+    }
+    if (message.from === this.ipfsId) {
+      return;
+    }
     try {
-      if (message.from === this.ipfsId) {
-        return;
-      }
       const queue = JSON.parse(await gunzip(message.data));
       this.process(queue);
     } catch (error) {
@@ -195,20 +224,33 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
   }
 
   async handleHashMessage(message:{from:string, data:Buffer}) {
+    if (message.from === this.ipfsId) {
+      return;
+    }
+    while (this.processingHash) {
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    if (!this.active) {
+      return;
+    }
+    this.processingHash = true;
     try {
-      if (message.from === this.ipfsId) {
+      const remoteHash = message.data.toString('utf8');
+      const beforeHash = await this.getIpfsHash();
+      if (remoteHash === beforeHash) {
+        this.processingHash = false;
         return;
       }
-      const remoteHash = message.data.toString('utf8');
       const remoteFiles = await this.ipfs.files.get(remoteHash);
       const queue = JSON.parse(remoteFiles[0].content.toString('utf8'));
-      const beforeHash = await this.getIpfsHash();
       this.process(queue);
       const afterHash = await this.getIpfsHash();
       if (beforeHash !== afterHash && afterHash !== remoteHash) {
         await this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(afterHash, 'utf8'));
       }
+      this.processingHash = false;
     } catch (error) {
+      this.processingHash = false;
       if (this.listenerCount('error') > 0) {
         this.emit('error', error);
       } else {
@@ -218,21 +260,13 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
   }
 
   async handleJoinMessage(message:{from:string, data:Buffer}) {
-    try {
-      if (message.from === this.ipfsId) {
-        return;
-      }
-      const peerId = message.data.toString('utf8');
-      if (this.ipfsId === peerId) {
-        await this.ipfsSync();
-      }
-    } catch (error) {
-      if (this.listenerCount('error') > 0) {
-        this.emit('error', error);
-      } else {
-        throw error;
-      }
+    if (!this.active) {
+      return;
     }
+    if (message.from === this.ipfsId) {
+      return;
+    }
+    await this.ipfsSync();
   }
 }
 

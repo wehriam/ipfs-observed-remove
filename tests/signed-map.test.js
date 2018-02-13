@@ -85,6 +85,8 @@ describe('IPFS Signed Map', () => {
     const valueY = generateValue();
     const alice = new IpfsSignedObservedRemoveMap(nodes[0], topic, [], { key: aliceKey });
     const bob = new IpfsSignedObservedRemoveMap(nodes[1], topic, [], { key: bobKey });
+    await Promise.all([alice.readyPromise, bob.readyPromise]);
+    await new Promise((resolve) => setTimeout(resolve, 500));
     const aliceProcessSetMessage = new Promise((resolve, reject) => {
       alice.once('error', reject);
       alice.once('set', resolve);
@@ -251,8 +253,7 @@ describe('IPFS Signed Map', () => {
     await alice.readyPromise;
     const bob = new IpfsSignedObservedRemoveMap(nodes[1], topic, [[keyX, valueX, idX, sign(keyX, valueX, idX)], [keyY, valueY, idY, sign(keyY, valueY, idY)], [keyZ, valueZ, idZ, sign(keyZ, valueZ, idZ)]], { key });
     await bob.readyPromise;
-    expect(alice.dump()).not.toEqual(bob.dump());
-    await new Promise((resolve) => setTimeout(resolve, 250));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     expect(alice.dump()).toEqual(bob.dump());
     alice.shutdown();
     bob.shutdown();
