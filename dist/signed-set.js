@@ -96,9 +96,9 @@ class IpfsSignedObservedRemoveSet    extends SignedObservedRemoveSet    { // esl
         }
       }
     });
-    await this.ipfs.pubsub.subscribe(this.topic, { discover: true }, this.boundHandleQueueMessage);
-    await this.ipfs.pubsub.subscribe(`${this.topic}:hash`, { discover: true }, this.boundHandleHashMessage);
-    await this.ipfs.pubsub.subscribe(`${this.topic}:join`, { discover: true }, this.boundHandleJoinMessage);
+    await this.ipfs.pubsub.subscribe(this.topic, this.boundHandleQueueMessage, { discover: true });
+    await this.ipfs.pubsub.subscribe(`${this.topic}:hash`, this.boundHandleHashMessage, { discover: true });
+    await this.ipfs.pubsub.subscribe(`${this.topic}:join`, this.boundHandleJoinMessage, { discover: true });
     this.sendJoinMessage();
   }
 
