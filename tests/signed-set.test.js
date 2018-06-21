@@ -38,8 +38,8 @@ describe('IPFS Signed Set', () => {
     expect(bob.has(A)).toEqual(true);
     expect(bob.has(B)).toEqual(true);
     expect(bob.has(C)).toEqual(true);
-    alice.shutdown();
-    bob.shutdown();
+    await alice.shutdown();
+    await bob.shutdown();
   });
 
   test('Throw on invalid signatures', () => {
@@ -108,8 +108,8 @@ describe('IPFS Signed Set', () => {
       ids.forEach((d) => alice.deleteSignedId(d, aliceSign(d)));
     });
     await expect(bobProcessDeleteMessage).rejects.toThrowError(InvalidSignatureError);
-    alice.shutdown();
-    bob.shutdown();
+    await alice.shutdown();
+    await bob.shutdown();
   });
 
   test('Synchronize sets', async () => {
@@ -150,8 +150,8 @@ describe('IPFS Signed Set', () => {
     }
     expect([...alice]).toEqual([]);
     expect([...bob]).toEqual([]);
-    alice.shutdown();
-    bob.shutdown();
+    await alice.shutdown();
+    await bob.shutdown();
   });
 
 
@@ -204,8 +204,8 @@ describe('IPFS Signed Set', () => {
     ids = alice.activeIds(Y);
     ids.forEach((d) => alice.deleteSignedId(d, sign(d)));
     await bobDeleteYPromise;
-    alice.shutdown();
-    bob.shutdown();
+    await alice.shutdown();
+    await bob.shutdown();
   });
 
 
@@ -229,8 +229,8 @@ describe('IPFS Signed Set', () => {
     await bob.readyPromise;
     await new Promise((resolve) => setTimeout(resolve, 500));
     expect(alice.dump()).toEqual(bob.dump());
-    alice.shutdown();
-    bob.shutdown();
+    await alice.shutdown();
+    await bob.shutdown();
   });
 });
 

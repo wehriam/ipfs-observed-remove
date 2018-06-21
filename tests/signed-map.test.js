@@ -42,7 +42,7 @@ describe('IPFS Signed Map', () => {
     expect(bob.get(keyA)).toEqual(valueA);
     expect(bob.get(keyB)).toEqual(valueB);
     expect(bob.get(keyC)).toEqual(valueC);
-    alice.shutdown();
+    await alice.shutdown();
     bob.shutdown();
   });
 
@@ -115,7 +115,7 @@ describe('IPFS Signed Map', () => {
       ids.forEach((d) => alice.deleteSignedId(d, aliceSign(d)));
     });
     await expect(bobProcessDeleteMessage).rejects.toThrowError(InvalidSignatureError);
-    alice.shutdown();
+    await alice.shutdown();
     bob.shutdown();
   });
 
@@ -172,7 +172,7 @@ describe('IPFS Signed Map', () => {
     expect(bob.get(keyZ)).toBeUndefined();
     expect([...alice]).toEqual([]);
     expect([...bob]).toEqual([]);
-    alice.shutdown();
+    await alice.shutdown();
     bob.shutdown();
   });
 
@@ -225,7 +225,7 @@ describe('IPFS Signed Map', () => {
     ids = alice.activeIds(keyY);
     ids.forEach((d) => alice.deleteSignedId(d, sign(d)));
     await bobDeleteYPromise;
-    alice.shutdown();
+    await alice.shutdown();
     bob.shutdown();
   });
 
@@ -255,7 +255,7 @@ describe('IPFS Signed Map', () => {
     await bob.readyPromise;
     await new Promise((resolve) => setTimeout(resolve, 500));
     expect(alice.dump()).toEqual(bob.dump());
-    alice.shutdown();
+    await alice.shutdown();
     bob.shutdown();
   });
 });

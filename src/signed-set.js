@@ -175,26 +175,26 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
    * Gracefully shutdown
    * @return {void}
    */
-  shutdown(): void {
+  async shutdown(): Promise<void> {
     this.active = false;
     // Catch exceptions here as pubsub is sometimes closed by process kill signals.
     if (this.ipfsId) {
       try {
-        this.ipfs.pubsub.unsubscribe(this.topic, this.boundHandleQueueMessage);
+        await this.ipfs.pubsub.unsubscribe(this.topic, this.boundHandleQueueMessage);
       } catch (error) {
         if (!notSubscribedRegex.test(error.message)) {
           throw error;
         }
       }
       try {
-        this.ipfs.pubsub.unsubscribe(`${this.topic}:hash`, this.boundHandleHashMessage);
+        await this.ipfs.pubsub.unsubscribe(`${this.topic}:hash`, this.boundHandleHashMessage);
       } catch (error) {
         if (!notSubscribedRegex.test(error.message)) {
           throw error;
         }
       }
       try {
-        this.ipfs.pubsub.unsubscribe(`${this.topic}:join`, this.boundHandleJoinMessage);
+        await this.ipfs.pubsub.unsubscribe(`${this.topic}:join`, this.boundHandleJoinMessage);
       } catch (error) {
         if (!notSubscribedRegex.test(error.message)) {
           throw error;

@@ -30,7 +30,7 @@ describe('IPFS Set', () => {
     expect(bob.has(A)).toEqual(true);
     expect(bob.has(B)).toEqual(true);
     expect(bob.has(C)).toEqual(true);
-    alice.shutdown();
+    await alice.shutdown();
     bob.shutdown();
   });
 
@@ -66,7 +66,7 @@ describe('IPFS Set', () => {
     }
     expect([...alice]).toEqual([]);
     expect([...bob]).toEqual([]);
-    alice.shutdown();
+    await alice.shutdown();
     bob.shutdown();
   });
 
@@ -116,7 +116,7 @@ describe('IPFS Set', () => {
     await bobAddYPromise;
     alice.delete(Y);
     await bobDeleteYPromise;
-    alice.shutdown();
+    await alice.shutdown();
     bob.shutdown();
   });
 
@@ -134,7 +134,7 @@ describe('IPFS Set', () => {
     await bob.readyPromise;
     await new Promise((resolve) => setTimeout(resolve, 500));
     expect(alice.dump()).toEqual(bob.dump());
-    alice.shutdown();
+    await alice.shutdown();
     bob.shutdown();
   });
 });

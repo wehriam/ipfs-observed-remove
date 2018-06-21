@@ -98,7 +98,7 @@ test(`Synchronizes ${COUNT} sets`, async () => {
   await Promise.all(bDeletePromises);
   randomSet().delete(C);
   await Promise.all(cDeletePromises);
-  sets.forEach((set) => set.shutdown());
+  await Promise.all(sets.map((set) => set.shutdown()));
 });
 
 test(`Synchronizes ${COUNT} sets automatically`, async () => {

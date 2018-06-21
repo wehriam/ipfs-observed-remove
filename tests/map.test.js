@@ -33,7 +33,7 @@ describe('IPFS Map', () => {
     expect(bob.get(keyA)).toEqual(valueA);
     expect(bob.get(keyB)).toEqual(valueB);
     expect(bob.get(keyC)).toEqual(valueC);
-    alice.shutdown();
+    await alice.shutdown();
     bob.shutdown();
   });
 
@@ -84,7 +84,7 @@ describe('IPFS Map', () => {
     expect(bob.get(keyZ)).toBeUndefined();
     expect([...alice]).toEqual([]);
     expect([...bob]).toEqual([]);
-    alice.shutdown();
+    await alice.shutdown();
     bob.shutdown();
   });
 
@@ -133,7 +133,7 @@ describe('IPFS Map', () => {
     await bobSetYPromise;
     alice.delete(keyY);
     await bobDeleteYPromise;
-    alice.shutdown();
+    await alice.shutdown();
     bob.shutdown();
   });
 
@@ -157,7 +157,7 @@ describe('IPFS Map', () => {
     await bob.readyPromise;
     await new Promise((resolve) => setTimeout(resolve, 500));
     expect(alice.dump()).toEqual(bob.dump());
-    alice.shutdown();
+    await alice.shutdown();
     bob.shutdown();
   });
 });
