@@ -42,6 +42,7 @@ describe('IPFS Set', () => {
     const alice: IpfsObservedRemoveSet<string> = new IpfsObservedRemoveSet(nodes[0], topic);
     const bob: IpfsObservedRemoveSet<string> = new IpfsObservedRemoveSet(nodes[1], topic);
     await Promise.all([alice.readyPromise, bob.readyPromise]);
+    await new Promise((resolve) => setTimeout(resolve, 500));
     let aliceAddCount = 0;
     let bobAddCount = 0;
     let aliceDeleteCount = 0;
@@ -78,12 +79,7 @@ describe('IPFS Set', () => {
     const alice = new IpfsObservedRemoveSet(nodes[0], topic);
     const bob = new IpfsObservedRemoveSet(nodes[1], topic);
     await Promise.all([alice.readyPromise, bob.readyPromise]);
-    alice.on('publish', (message) => {
-      bob.process(message);
-    });
-    bob.on('publish', (message) => {
-      alice.process(message);
-    });
+    await new Promise((resolve) => setTimeout(resolve, 500));
     const aliceAddXPromise = new Promise((resolve) => {
       alice.once('add', (value) => {
         expect(value).toEqual(X);
