@@ -7278,9 +7278,9 @@ observable-webworkers@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/observable-webworkers/-/observable-webworkers-1.0.0.tgz#dcbd484a9644d512accc351962c6e710313fbb68"
 
-observed-remove@2.0.2:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/observed-remove/-/observed-remove-2.0.2.tgz#4630fe2b8853e03d220b68f1aa64957328356f1b"
+observed-remove@2.0.3:
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/observed-remove/-/observed-remove-2.0.3.tgz#d1b0dacf2d65595a2e8b70f4d41937c8e16aa901"
   dependencies:
     directed-graph-map "^1.2.3"
     flow-copy-source "^2.0.2"
