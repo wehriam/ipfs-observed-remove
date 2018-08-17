@@ -2,6 +2,7 @@
 
 const { gzip, gunzip } = require('./lib/gzip');
 const { ObservedRemoveMap } = require('observed-remove');
+const stringify = require('json-stringify-deterministic');
 
                 
                  
@@ -61,7 +62,7 @@ class IpfsObservedRemoveMap       extends ObservedRemoveMap       { // eslint-di
     this.flush();
     const [insertQueue, deleteQueue] = super.dump();
     deleteQueue.sort((x, y) => (x[0] > y[0] ? -1 : 1));
-    insertQueue.sort((x, y) => (x[0] > y[0] ? -1 : 1));
+    insertQueue.sort((x, y) => (x[1][0] > y[1][0] ? -1 : 1));
     return [insertQueue, deleteQueue];
   }
 
@@ -86,7 +87,7 @@ class IpfsObservedRemoveMap       extends ObservedRemoveMap       { // eslint-di
         return;
       }
       try {
-        const message = await gzip(JSON.stringify(queue));
+        const message = await gzip(stringify(queue));
         await this.ipfs.pubsub.publish(this.topic, message);
       } catch (error) {
         if (this.listenerCount('error') > 0) {
@@ -145,7 +146,7 @@ class IpfsObservedRemoveMap       extends ObservedRemoveMap       { // eslint-di
    */
   async getIpfsHash()                 {
     const data = this.dump();
-    const files = await this.ipfs.files.add(Buffer.from(JSON.stringify(data)));
+    const files = await this.ipfs.files.add(Buffer.from(stringify(data)));
     return files[0].hash;
   }
 

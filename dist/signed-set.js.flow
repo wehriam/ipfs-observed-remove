@@ -2,6 +2,7 @@
 
 const { gzip, gunzip } = require('./lib/gzip');
 const { SignedObservedRemoveSet } = require('observed-remove');
+const stringify = require('json-stringify-deterministic');
 
 type Options = {
   maxAge?:number,
@@ -86,7 +87,7 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
         return;
       }
       try {
-        const message = await gzip(JSON.stringify(queue));
+        const message = await gzip(stringify(queue));
         await this.ipfs.pubsub.publish(this.topic, message);
       } catch (error) {
         if (this.listenerCount('error') > 0) {
@@ -145,7 +146,7 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
    */
   async getIpfsHash():Promise<string> {
     const data = this.dump();
-    const files = await this.ipfs.files.add(Buffer.from(JSON.stringify(data)));
+    const files = await this.ipfs.files.add(Buffer.from(stringify(data)));
     return files[0].hash;
   }
 
