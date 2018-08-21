@@ -242,6 +242,10 @@ class IpfsSignedObservedRemoveSet    extends SignedObservedRemoveSet    { // esl
         return;
       }
       const remoteFiles = await this.ipfs.files.get(remoteHash);
+      if (!remoteFiles.length === 0) {
+        this.processingHash = false;
+        return;
+      }
       const queue = JSON.parse(remoteFiles[0].content.toString('utf8'));
       this.process(queue);
       const afterHash = await this.getIpfsHash();
