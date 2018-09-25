@@ -16,16 +16,8 @@ const ipfs2 = ipfsAPI('/ip4/127.0.0.1/tcp/5002');
 
 const topic = "CRDT_SET";
 
-const alice = new IpfsObservedRemoveSet(ipfs1, topic );
+const alice = new IpfsObservedRemoveSet(ipfs1, topic);
 const bob = new IpfsObservedRemoveSet(ipfs2, topic);
-
-alice.on('publish', (message) => {
-  setTimeout(() => bob.process(message), Math.round(Math.random() * 1000));
-});
-
-bob.on('publish', (message) => {
-  setTimeout(() => alice.process(message), Math.round(Math.random() * 1000));
-});
 
 alice.on('add', (value) => {
   console.log(value); // logs foo, bar
@@ -52,14 +44,6 @@ const topic = "CRDT_MAP";
 
 const alice = new IpfsObservedRemoveMap(ipfs1, topic);
 const bob = new IpfsObservedRemoveMap(ipfs2, topic);
-
-alice.on('publish', (message) => {
-  setTimeout(() => bob.process(message), Math.round(Math.random() * 1000));
-});
-
-bob.on('publish', (message) => {
-  setTimeout(() => alice.process(message), Math.round(Math.random() * 1000));
-});
 
 alice.on('set', (key, value) => {
   console.log(key, value); // logs [a, 1], [b, 2]
