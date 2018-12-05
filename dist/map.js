@@ -146,7 +146,7 @@ class IpfsObservedRemoveMap       extends ObservedRemoveMap       { // eslint-di
    */
   async getIpfsHash()                 {
     const data = this.dump();
-    const files = await this.ipfs.files.add(Buffer.from(stringify(data)));
+    const files = await this.ipfs.add(Buffer.from(stringify(data)));
     return files[0].hash;
   }
 
