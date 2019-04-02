@@ -7,7 +7,7 @@ Eventually-consistent, conflict-free replicated data types (CRDT) [implemented](
 This module and the IPFS PubSub system are experimental. If you encounter an issue, fork the repository, [write tests demonstrating](https://github.com/wehriam/ipfs-observed-remove/tree/master/tests) the issue, and create a [pull request](https://github.com/wehriam/ipfs-observed-remove).
 
 ```js
-const ipfsAPI = require('ipfs-api');
+const ipfsAPI = require('ipfs-http-client');
 const { IpfsObservedRemoveSet } = require('ipfs-observed-remove');
 
 // IPFS nodes with PubSub enabled
@@ -33,7 +33,7 @@ bob.has('foo'); // true
 ```
 
 ```js
-const ipfsAPI = require('ipfs-api');
+const ipfsAPI = require('ipfs-http-client');
 const { IpfsObservedRemoveMap } = require('ipfs-observed-remove');
 
 // IPFS nodes with PubSub enabled
