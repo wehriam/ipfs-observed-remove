@@ -1,7 +1,7 @@
 // @flow
 
 const uuid = require('uuid');
-const { getSwarm } = require('./lib/ipfs');
+const { getSwarm, closeAllNodes } = require('./lib/ipfs');
 const { IpfsObservedRemoveMap } = require('../src');
 const { generateValue } = require('./lib/values');
 const expect = require('expect');
@@ -13,6 +13,10 @@ let nodes = [];
 describe('IPFS Map', () => {
   beforeAll(async () => {
     nodes = await getSwarm(2);
+  });
+
+  afterAll(async () => {
+    await closeAllNodes();
   });
 
   test('Load from a hash', async () => {

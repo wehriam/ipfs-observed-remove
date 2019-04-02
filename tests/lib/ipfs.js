@@ -31,6 +31,7 @@ const getIpfsNode = module.exports.getIpfsNode = async (bootstrap:Array<string> 
     await new Promise((resolve, reject) => {
       daemon.stop((error) => {
         if (error) {
+          console.log(error);
           reject(error);
         } else {
           resolve();
@@ -41,7 +42,13 @@ const getIpfsNode = module.exports.getIpfsNode = async (bootstrap:Array<string> 
   return ipfs;
 };
 
-let nodes = [];
+let nodes:Array<Object> = [];
+
+module.exports.closeAllNodes = async () => {
+  const n = nodes;
+  nodes = [];
+  await Promise.all(n.map((node) => node.stopNode()));
+};
 
 module.exports.getSwarm = async (count:number) => {
   if (nodes.length < count) {

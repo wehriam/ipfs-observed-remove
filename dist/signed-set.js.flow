@@ -16,7 +16,7 @@ const notSubscribedRegex = /Not subscribed/;
 class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // eslint-disable-line no-unused-vars
   /**
    * Create an observed-remove CRDT.
-   * @param {Object} [ipfs] Object implementing the [core IPFS API](https://github.com/ipfs/interface-ipfs-core#api), most likely a [js-ipfs](https://github.com/ipfs/js-ipfs) or [js-ipfs-api](https://github.com/ipfs/js-ipfs-api) object.
+   * @param {Object} [ipfs] Object implementing the [core IPFS API](https://github.com/ipfs/interface-ipfs-core#api), most likely a [js-ipfs](https://github.com/ipfs/js-ipfs) or [ipfs-http-client](https://github.com/ipfs/js-ipfs-http-client) object.
    * @param {String} [topic] IPFS pubub topic to use in synchronizing the CRDT.
    * @param {Iterable<V>} [entries=[]] Iterable of initial values
    * @param {Object} [options={}]
@@ -68,7 +68,7 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
 
   async loadIpfsHash(hash:string):Promise<void> {
     try {
-      const files = await this.ipfs.files.get(hash);
+      const files = await this.ipfs.get(hash);
       const queue = JSON.parse(files[0].content.toString('utf8'));
       this.process(queue);
     } catch (error) {
@@ -241,7 +241,7 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
         this.processingHash = false;
         return;
       }
-      const remoteFiles = await this.ipfs.files.get(remoteHash);
+      const remoteFiles = await this.ipfs.get(remoteHash);
       if (!remoteFiles.length === 0) {
         this.processingHash = false;
         return;
