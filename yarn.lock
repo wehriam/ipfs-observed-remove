@@ -8073,12 +8073,13 @@ observable-webworkers@^1.0.0:
   resolved "https://registry.yarnpkg.com/observable-webworkers/-/observable-webworkers-1.0.0.tgz#dcbd484a9644d512accc351962c6e710313fbb68"
   integrity sha512-+cECwCR8IEh8UY5nefQVLO9Cydqpk1izO+o7BABmKjXfJZyEOzBWY3ss5jbOPM6KmEa9aQExvAtTW6tVTOsNAQ==
 
-observed-remove@2.2.2:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/observed-remove/-/observed-remove-2.2.2.tgz#337017c097efca0e1f391b69c47cbe809005a7f2"
-  integrity sha512-RNLeSAoVIIzWsODl7yxAg5vo99VlW9YTm4UplFy8dNJ3IHiD5Fpx69/+OMPGSi1Fhplicr8MQQ02jMaocKLZ0g==
+observed-remove@2.2.4:
+  version "2.2.4"
+  resolved "https://registry.yarnpkg.com/observed-remove/-/observed-remove-2.2.4.tgz#18b5ceeb31c6899dedcbf1c3a2a5e4e38db4a2c6"
+  integrity sha512-FcbBCmbR9mw8+4AptfKHcf8XanfhtvdWsc00cvekMOjv75JRdvvbfA9yILtkv+AOyDAkaBIvxf22wFzci4bGuw==
   dependencies:
     "@bunchtogether/hash-object" "^1.0.2"
+    json-stringify-deterministic "^1.0.1"
     node-rsa "^1.0.5"
 
 once@^1.3.0, once@^1.3.1, once@^1.3.2, once@^1.3.3, once@^1.4.0:
@@ -8951,7 +8952,7 @@ pull-write@^1.1.4:
     pull-cat "^1.1.11"
     pull-stream "^3.4.5"
 
-"pull-ws@github:hugomrdias/pull-ws#fix/bundle-size":
+pull-ws@hugomrdias/pull-ws#fix/bundle-size:
   version "3.3.1"
   resolved "https://codeload.github.com/hugomrdias/pull-ws/tar.gz/8e2ce0bb3b1cd6804828316e937fff8e0bef6225"
   dependencies:
