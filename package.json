@@ -1,6 +1,6 @@
 {
   "name": "ipfs-observed-remove",
-  "version": "2.2.4",
+  "version": "2.2.5",
   "main": "dist/index.js",
   "repository": "git@github.com:wehriam/ipfs-observed-remove",
   "author": "John Wehr <johnwehr@gmail.com>",
@@ -9,7 +9,7 @@
     "build": "rm -rf ./dist; flow-remove-types ./src --out-dir ./dist && flow-copy-source ./src ./dist",
     "flow-typed": "./node_modules/.bin/flow-typed install --overwrite",
     "test": "yarn lint && yarn test:js",
-    "test:js": "cross-env NODE_ENV=test jest tests",
+    "test:js": "cross-env NODE_ENV=test jest /Users/johnwehr/Projects/ipfs-observed-remove/tests/map.test.js",
     "lint": "npm run lint:js && npm run lint:flow",
     "lint:js": "eslint -c ./.eslintrc --no-eslintrc --fix .",
     "lint:flow": "flow --show-all-errors",
@@ -63,6 +63,7 @@
   },
   "dependencies": {
     "json-stringify-deterministic": "^1.0.1",
-    "observed-remove": "2.2.4"
+    "observed-remove": "2.2.5",
+    "pako": "^1.0.10"
   }
 }

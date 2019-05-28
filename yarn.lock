@@ -8073,10 +8073,10 @@ observable-webworkers@^1.0.0:
   resolved "https://registry.yarnpkg.com/observable-webworkers/-/observable-webworkers-1.0.0.tgz#dcbd484a9644d512accc351962c6e710313fbb68"
   integrity sha512-+cECwCR8IEh8UY5nefQVLO9Cydqpk1izO+o7BABmKjXfJZyEOzBWY3ss5jbOPM6KmEa9aQExvAtTW6tVTOsNAQ==
 
-observed-remove@2.2.4:
-  version "2.2.4"
-  resolved "https://registry.yarnpkg.com/observed-remove/-/observed-remove-2.2.4.tgz#18b5ceeb31c6899dedcbf1c3a2a5e4e38db4a2c6"
-  integrity sha512-FcbBCmbR9mw8+4AptfKHcf8XanfhtvdWsc00cvekMOjv75JRdvvbfA9yILtkv+AOyDAkaBIvxf22wFzci4bGuw==
+observed-remove@2.2.5:
+  version "2.2.5"
+  resolved "https://registry.yarnpkg.com/observed-remove/-/observed-remove-2.2.5.tgz#9674536f626e934c49cd56ea3da8ef31dc452b16"
+  integrity sha512-Qg3YhHiKkXidyjO+G7ApcD3M1ypk1ryCjl2fOpBdGU6RS5PvjCPQuWx1d+2rMjP0oqZ7xysrgy8wv3K5f2w/CA==
   dependencies:
     "@bunchtogether/hash-object" "^1.0.2"
     json-stringify-deterministic "^1.0.1"
@@ -8278,6 +8278,11 @@ package-json@^4.0.0:
     registry-auth-token "^3.0.1"
     registry-url "^3.0.3"
     semver "^5.1.0"
+
+pako@^1.0.10:
+  version "1.0.10"
+  resolved "https://registry.yarnpkg.com/pako/-/pako-1.0.10.tgz#4328badb5086a426aa90f541977d4955da5c9732"
+  integrity sha512-0DTvPVU3ed8+HNXOu5Bs+o//Mbdj9VNQMUOe9oKCwh8l0GNwpTDMKCWbRjgtD291AWnkAgkqA/LOnQS8AmS1tw==
 
 pako@~0.2.0:
   version "0.2.9"

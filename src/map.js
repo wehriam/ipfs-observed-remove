@@ -1,6 +1,6 @@
 // @flow
 
-const { gzip, gunzip } = require('./lib/gzip');
+const { inflate, deflate } = require('pako');
 const { ObservedRemoveMap } = require('observed-remove');
 const stringify = require('json-stringify-deterministic');
 
@@ -8,7 +8,8 @@ type Options = {
   maxAge?:number,
   bufferPublishing?:number,
   key?: any,
-  format?: string
+  format?: string,
+  disableSync?: boolean
 };
 
 const notSubscribedRegex = /Not subscribed/;
@@ -28,6 +29,7 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
     this.ipfs = ipfs;
     this.topic = topic;
     this.active = true;
+    this.disableSync = !!options.disableSync;
     this.boundHandleQueueMessage = this.handleQueueMessage.bind(this);
     this.boundHandleHashMessage = this.handleHashMessage.bind(this);
     this.boundHandleJoinMessage = this.handleJoinMessage.bind(this);
@@ -48,6 +50,7 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
   readyPromise: Promise<void>;
   active: boolean;
   ipfsId: string;
+  disableSync: boolean;
   boundHandleQueueMessage: (message:{from:string, data:Buffer}) => Promise<void>;
   boundHandleHashMessage: (message:{from:string, data:Buffer}) => Promise<void>;
   boundHandleJoinMessage: (message:{from:string, data:Buffer}) => Promise<void>;
@@ -87,7 +90,7 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
         return;
       }
       try {
-        const message = await gzip(stringify(queue));
+        const message = Buffer.from(deflate(stringify(queue)));
         await this.ipfs.pubsub.publish(this.topic, message);
       } catch (error) {
         if (this.listenerCount('error') > 0) {
@@ -98,9 +101,11 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
       }
     });
     await this.ipfs.pubsub.subscribe(this.topic, this.boundHandleQueueMessage, { discover: true });
-    await this.ipfs.pubsub.subscribe(`${this.topic}:hash`, this.boundHandleHashMessage, { discover: true });
-    await this.ipfs.pubsub.subscribe(`${this.topic}:join`, this.boundHandleJoinMessage, { discover: true });
-    this.sendJoinMessage();
+    if (!this.disableSync) {
+      await this.ipfs.pubsub.subscribe(`${this.topic}:hash`, this.boundHandleHashMessage, { discover: true });
+      await this.ipfs.pubsub.subscribe(`${this.topic}:join`, this.boundHandleJoinMessage, { discover: true });
+      this.sendJoinMessage();
+    }
   }
 
   async sendJoinMessage():Promise<void> {
@@ -187,18 +192,20 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
           throw error;
         }
       }
-      try {
-        await this.ipfs.pubsub.unsubscribe(`${this.topic}:hash`, this.boundHandleHashMessage);
-      } catch (error) {
-        if (!notSubscribedRegex.test(error.message)) {
-          throw error;
+      if (!this.disableSync) {
+        try {
+          await this.ipfs.pubsub.unsubscribe(`${this.topic}:hash`, this.boundHandleHashMessage);
+        } catch (error) {
+          if (!notSubscribedRegex.test(error.message)) {
+            throw error;
+          }
         }
-      }
-      try {
-        await this.ipfs.pubsub.unsubscribe(`${this.topic}:join`, this.boundHandleJoinMessage);
-      } catch (error) {
-        if (!notSubscribedRegex.test(error.message)) {
-          throw error;
+        try {
+          await this.ipfs.pubsub.unsubscribe(`${this.topic}:join`, this.boundHandleJoinMessage);
+        } catch (error) {
+          if (!notSubscribedRegex.test(error.message)) {
+            throw error;
+          }
         }
       }
     }
@@ -212,7 +219,7 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
       return;
     }
     try {
-      const queue = JSON.parse(await gunzip(message.data));
+      const queue = JSON.parse(Buffer.from(inflate(message.data)).toString('utf8'));
       this.process(queue);
     } catch (error) {
       if (this.listenerCount('error') > 0) {
