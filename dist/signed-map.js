@@ -1,7 +1,7 @@
 //      
 
 const { inflate, deflate } = require('pako');
-const { SignedObservedRemoveMap } = require('observed-remove');
+const SignedObservedRemoveMap = require('observed-remove/dist/signed-map');
 const stringify = require('json-stringify-deterministic');
 
                 
