@@ -183,6 +183,7 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
    */
   async shutdown(): Promise<void> {
     this.active = false;
+    clearTimeout(this.ipfsSyncTimeout);
     // Catch exceptions here as pubsub is sometimes closed by process kill signals.
     if (this.ipfsId) {
       try {

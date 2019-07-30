@@ -183,6 +183,7 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
    */
   async shutdown()                {
     this.active = false;
+    clearTimeout(this.ipfsSyncTimeout);
     // Catch exceptions here as pubsub is sometimes closed by process kill signals.
     if (this.ipfsId) {
       try {

@@ -68,65 +68,58 @@ bob.get('a'); // 1
 
 #### Table of Contents
 
--   [IpfsObservedRemoveSet](#ipfsobservedremoveset)
-    -   [ipfsSync](#ipfssync)
-    -   [dump](#dump)
-    -   [getIpfsHash](#getipfshash)
-    -   [waitForIpfsPeers](#waitforipfspeers)
-    -   [ipfsPeerCount](#ipfspeercount)
-    -   [shutdown](#shutdown)
+-   [constructor](#constructor)
+    -   [Parameters](#parameters)
+-   [dump](#dump)
+-   [ipfsSync](#ipfssync)
+-   [getIpfsHash](#getipfshash)
+-   [waitForIpfsPeers](#waitforipfspeers)
+-   [ipfsPeerCount](#ipfspeercount)
+-   [shutdown](#shutdown)
 -   [IpfsObservedRemoveSet#readyPromise](#ipfsobservedremovesetreadypromise)
 
-### IpfsObservedRemoveSet
+### constructor
 
-**Extends ObservedRemoveSet**
+Create an observed-remove CRDT.
 
-Class representing a IPFS Observed Remove Set
+#### Parameters
 
-Implements all methods and iterators of the native `Set` object and the 'ObservedRemovedSet' class in addition to the following.
+-   `ipfs` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** Object implementing the [core IPFS API](https://github.com/ipfs/interface-ipfs-core#api), most likely a [js-ipfs](https://github.com/ipfs/js-ipfs) or [ipfs-http-client](https://github.com/ipfs/js-ipfs-http-client) object.
+-   `topic` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** IPFS pubub topic to use in synchronizing the CRDT.
+-   `entries` **Iterable&lt;V>** Iterable of initial values (optional, default `[]`)
+-   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)**  (optional, default `{}`)
+    -   `options.maxAge` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Max age of insertion/deletion identifiers (optional, default `5000`)
+    -   `options.bufferPublishing` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Interval by which to buffer 'publish' events (optional, default `20`)
 
-See: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set>
+### dump
 
-See: <https://github.com/wehriam/observed-remove#set-api>
+Return a sorted array containing all of the set's insertions and deletions.
 
-**Parameters**
-
--   `ipfs` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
--   `topic` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** 
--   `entries` **Iterable&lt;T>** 
--   `options` **Options**  (optional, default `{}`)
-
-#### ipfsSync
+### ipfsSync
 
 Publish an IPFS hash of an array containing all of the object's insertions and deletions.
 
 Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;any>>** 
 
-#### dump
-
-Return a sorted array containing all of the object's insertions and deletions.
-
-Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;any>>** 
-
-#### getIpfsHash
+### getIpfsHash
 
 Stores and returns an IPFS hash of the current insertions and deletions
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** 
 
-#### waitForIpfsPeers
+### waitForIpfsPeers
 
 Resolves an array of peer ids after one or more IPFS peers connects. Useful for testing.
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;void>** 
 
-#### ipfsPeerCount
+### ipfsPeerCount
 
 Current number of IPFS pubsub peers.
 
 Returns **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** 
 
-#### shutdown
+### shutdown
 
 Gracefully shutdown
 
@@ -135,6 +128,8 @@ Returns **void**
 ### IpfsObservedRemoveSet#readyPromise
 
 Resolves when IPFS topic subscriptions are confirmed.
+
+Type: [Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;void>
 
 ## Map API
 
@@ -142,65 +137,58 @@ Resolves when IPFS topic subscriptions are confirmed.
 
 #### Table of Contents
 
--   [IpfsObservedRemoveMap](#ipfsobservedremovemap)
-    -   [ipfsSync](#ipfssync)
-    -   [dump](#dump)
-    -   [getIpfsHash](#getipfshash)
-    -   [waitForIpfsPeers](#waitforipfspeers)
-    -   [ipfsPeerCount](#ipfspeercount)
-    -   [shutdown](#shutdown)
+-   [constructor](#constructor)
+    -   [Parameters](#parameters)
+-   [dump](#dump)
+-   [ipfsSync](#ipfssync)
+-   [getIpfsHash](#getipfshash)
+-   [waitForIpfsPeers](#waitforipfspeers)
+-   [ipfsPeerCount](#ipfspeercount)
+-   [shutdown](#shutdown)
 -   [IpfsObservedRemoveSet#readyPromise](#ipfsobservedremovesetreadypromise)
 
-### IpfsObservedRemoveMap
+### constructor
 
-**Extends ObservedRemoveMap**
+Create an observed-remove CRDT.
 
-Class representing a IPFS Observed Remove Map
+#### Parameters
 
-Implements all methods and iterators of the native `Map` object and the 'ObservedRemovedSet' class in addition to the following.
+-   `ipfs` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** Object implementing the [core IPFS API](https://github.com/ipfs/interface-ipfs-core#api), most likely a [js-ipfs](https://github.com/ipfs/js-ipfs) or [ipfs-http-client](https://github.com/ipfs/js-ipfs-http-client) object.
+-   `topic` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** IPFS pubub topic to use in synchronizing the CRDT.
+-   `entries` **Iterable&lt;V>** Iterable of initial values (optional, default `[]`)
+-   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)**  (optional, default `{}`)
+    -   `options.maxAge` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Max age of insertion/deletion identifiers (optional, default `5000`)
+    -   `options.bufferPublishing` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Interval by which to buffer 'publish' events (optional, default `20`)
 
-See: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map>
+### dump
 
-See: <https://github.com/wehriam/observed-remove#map-api>
+Return a sorted array containing all of the set's insertions and deletions.
 
-**Parameters**
-
--   `ipfs` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)** 
--   `topic` **[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** 
--   `entries` **Iterable&lt;\[K, V]>** 
--   `options` **Options**  (optional, default `{}`)
-
-#### ipfsSync
+### ipfsSync
 
 Publish an IPFS hash of an array containing all of the object's insertions and deletions.
 
 Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;any>>** 
 
-#### dump
-
-Return a sorted array containing all of the object's insertions and deletions.
-
-Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;any>>** 
-
-#### getIpfsHash
+### getIpfsHash
 
 Stores and returns an IPFS hash of the current insertions and deletions
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** 
 
-#### waitForIpfsPeers
+### waitForIpfsPeers
 
 Resolves an array of peer ids after one or more IPFS peers connects. Useful for testing.
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;void>** 
 
-#### ipfsPeerCount
+### ipfsPeerCount
 
 Current number of IPFS pubsub peers.
 
 Returns **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** 
 
-#### shutdown
+### shutdown
 
 Gracefully shutdown
 
@@ -209,3 +197,5 @@ Returns **void**
 ### IpfsObservedRemoveSet#readyPromise
 
 Resolves when IPFS topic subscriptions are confirmed.
+
+Type: [Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;void>
