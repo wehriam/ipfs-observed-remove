@@ -257,7 +257,7 @@ class IpfsSignedObservedRemoveMap       extends SignedObservedRemoveMap       { 
       const queue = JSON.parse(remoteFiles[0].content.toString('utf8'));
       this.process(queue);
       const afterHash = await this.getIpfsHash();
-      if (beforeHash !== afterHash && afterHash !== remoteHash) {
+      if (this.active && beforeHash !== afterHash && afterHash !== remoteHash) {
         await this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(afterHash, 'utf8'));
       }
       this.processingHash = false;
