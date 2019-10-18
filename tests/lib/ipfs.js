@@ -1,54 +1,87 @@
 // @flow
 
 const DaemonFactory = require('ipfsd-ctl');
+const ipfsAPI = require('ipfs-http-client');
 
-const daemonFactory = DaemonFactory.create({ type: 'go' });
+const daemonFactory = DaemonFactory.create({ type: 'go', IpfsClient: ipfsAPI });
 
-const getIpfsNode = module.exports.getIpfsNode = async (bootstrap:Array<string> = []) => {
-  const [daemon, ipfs] = await new Promise((resolve, reject) => {
-    const options = {
-      disposable: true,
-      args: ['--enable-pubsub-experiment'],
-      config: {
-        Bootstrap: bootstrap,
-        Discovery: {
-          MDNS: {
-            Interval: 1,
-            Enabled: true,
-          },
+module.exports.getGatewayIpfsNode = async (port:number) => {
+  const options = {
+    initOptions: {
+      bits: 1024,
+    },
+    disposable: true,
+    args: ['--enable-pubsub-experiment'],
+    config: {
+      Experimental: {
+        FilestoreEnabled: true,
+        Libp2pStreamMounting: true,
+      },
+      Bootstrap: [],
+      Addresses: {
+        Gateway: `/ip4/127.0.0.1/tcp/${port}`,
+        Swarm: [
+          '/ip4/0.0.0.0/tcp/0',
+          '/ip6/::/tcp/0',
+        ],
+      },
+      Discovery: {
+        MDNS: {
+          Interval: 1,
+          Enabled: false,
         },
       },
-    };
-    daemonFactory.spawn(options, (error, ipfsd) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve([ipfsd, ipfsd.api]);
-      }
-    });
-  });
-  ipfs.stopNode = async () => {
-    await new Promise((resolve, reject) => {
-      daemon.stop((error) => {
-        if (error) {
-          console.log(error);
-          reject(error);
-        } else {
-          resolve();
-        }
-      });
-    });
+    },
   };
-  return ipfs;
+  const daemon = await daemonFactory.spawn(options);
+  daemon.api.stopNode = async () => {
+    await daemon.stop(1000);
+  };
+  await daemon.api.id();
+  return daemon.api;
 };
-
-let nodes:Array<Object> = [];
 
 module.exports.closeAllNodes = async () => {
   const n = nodes;
   nodes = [];
   await Promise.all(n.map((node) => node.stopNode()));
 };
+
+const getIpfsNode = module.exports.getIpfsNode = async (bootstrap:Array<string> = []) => {
+  const options = {
+    initOptions: {
+      bits: 1024,
+    },
+    disposable: true,
+    args: ['--enable-pubsub-experiment'],
+    config: {
+      Experimental: {
+        FilestoreEnabled: true,
+        Libp2pStreamMounting: true,
+      },
+      Bootstrap: bootstrap,
+      Addresses: {
+        Swarm: [
+          '/ip4/0.0.0.0/tcp/0',
+          '/ip6/::/tcp/0',
+        ],
+      },
+      Discovery: {
+        MDNS: {
+          Interval: 1,
+          Enabled: false,
+        },
+      },
+    },
+  };
+  const daemon = await daemonFactory.spawn(options);
+  daemon.api.stopNode = async () => {
+    await daemon.stop(1000);
+  };
+  return daemon.api;
+};
+
+let nodes:Array<Object> = [];
 
 module.exports.getSwarm = async (count:number) => {
   if (nodes.length < count) {

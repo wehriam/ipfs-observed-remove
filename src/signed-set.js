@@ -100,10 +100,26 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
         }
       }
     });
-    await this.ipfs.pubsub.subscribe(this.topic, this.boundHandleQueueMessage, { discover: true });
+    try {
+      await this.ipfs.pubsub.subscribe(this.topic, this.boundHandleQueueMessage, { discover: true });
+    } catch (error) {
+      if (this.listenerCount('error') > 0) {
+        this.emit('error', error);
+      } else {
+        throw error;
+      }
+    }
     if (!this.disableSync) {
-      await this.ipfs.pubsub.subscribe(`${this.topic}:hash`, this.boundHandleHashMessage, { discover: true });
-      await this.ipfs.pubsub.subscribe(`${this.topic}:join`, this.boundHandleJoinMessage, { discover: true });
+      try {
+        await this.ipfs.pubsub.subscribe(`${this.topic}:hash`, this.boundHandleHashMessage, { discover: true });
+        await this.ipfs.pubsub.subscribe(`${this.topic}:join`, this.boundHandleJoinMessage, { discover: true });
+      } catch (error) {
+        if (this.listenerCount('error') > 0) {
+          this.emit('error', error);
+        } else {
+          throw error;
+        }
+      }
       this.sendJoinMessage();
     }
   }
