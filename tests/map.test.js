@@ -38,7 +38,7 @@ describe('IPFS Map', () => {
     expect(bob.get(keyB)).toEqual(valueB);
     expect(bob.get(keyC)).toEqual(valueC);
     await alice.shutdown();
-    bob.shutdown();
+    await bob.shutdown();
   });
 
   test('Synchronize maps', async () => {
@@ -89,7 +89,7 @@ describe('IPFS Map', () => {
     expect([...alice]).toEqual([]);
     expect([...bob]).toEqual([]);
     await alice.shutdown();
-    bob.shutdown();
+    await bob.shutdown();
   });
 
   test('Synchronize set and delete events', async () => {
@@ -138,7 +138,7 @@ describe('IPFS Map', () => {
     alice.delete(keyY);
     await bobDeleteYPromise;
     await alice.shutdown();
-    bob.shutdown();
+    await bob.shutdown();
   });
 
   test('Synchronize mixed maps using sync', async () => {
@@ -156,12 +156,12 @@ describe('IPFS Map', () => {
     const valueY = generateValue();
     const valueZ = generateValue();
     const alice = new IpfsObservedRemoveMap(nodes[0], topic, [[keyA, valueA], [keyB, valueB], [keyC, valueC]]);
-    await alice.readyPromise;
     const bob = new IpfsObservedRemoveMap(nodes[1], topic, [[keyX, valueX], [keyY, valueY], [keyZ, valueZ]]);
-    await bob.readyPromise;
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await Promise.all([bob.readyPromise, alice.readyPromise]);
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    await Promise.all([alice, bob].map((map) => map.syncQueue.onIdle()));
     expect(alice.dump()).toEqual(bob.dump());
     await alice.shutdown();
-    bob.shutdown();
+    await bob.shutdown();
   });
 });

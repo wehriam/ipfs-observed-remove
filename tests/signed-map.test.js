@@ -47,10 +47,10 @@ describe('IPFS Signed Map', () => {
     expect(bob.get(keyB)).toEqual(valueB);
     expect(bob.get(keyC)).toEqual(valueC);
     await alice.shutdown();
-    bob.shutdown();
+    await bob.shutdown();
   });
 
-  test('Throw on invalid signatures', () => {
+  test('Throw on invalid signatures', async () => {
     const topic = uuid.v4();
     const keyA = uuid.v4();
     const valueA = generateValue();
@@ -66,7 +66,7 @@ describe('IPFS Signed Map', () => {
     expect(() => {
       map.deleteSigned(keyA, id, '***');
     }).toThrowError(InvalidSignatureError);
-    map.shutdown();
+    await map.shutdown();
   });
 
   test('Emit errors on invalid synchronization', async () => {
@@ -242,13 +242,13 @@ describe('IPFS Signed Map', () => {
     const idY = generateId();
     const idZ = generateId();
     const alice = new IpfsSignedObservedRemoveMap(nodes[0], topic, [[keyA, valueA, idA, sign(keyA, valueA, idA)], [keyB, valueB, idB, sign(keyB, valueB, idB)], [keyC, valueC, idC, sign(keyC, valueC, idC)]], { key });
-    await alice.readyPromise;
     const bob = new IpfsSignedObservedRemoveMap(nodes[1], topic, [[keyX, valueX, idX, sign(keyX, valueX, idX)], [keyY, valueY, idY, sign(keyY, valueY, idY)], [keyZ, valueZ, idZ, sign(keyZ, valueZ, idZ)]], { key });
-    await bob.readyPromise;
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    await Promise.all([bob.readyPromise, alice.readyPromise]);
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    await Promise.all([alice, bob].map((map) => map.syncQueue.onIdle()));
     expect(alice.dump()).toEqual(bob.dump());
     await alice.shutdown();
-    bob.shutdown();
+    await bob.shutdown();
   });
 });
 
