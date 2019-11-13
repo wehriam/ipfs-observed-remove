@@ -2,7 +2,7 @@
 
 const { IpfsObservedRemoveMap, IpfsObservedRemoveSet, IpfsSignedObservedRemoveMap, IpfsSignedObservedRemoveSet } = require('../../src');
 
-module.exports = async (maps: Array<IpfsObservedRemoveMap<string, any>> | IpfsObservedRemoveSet<any> | IpfsSignedObservedRemoveMap<string, any> | IpfsSignedObservedRemoveSet<any>) => new Promise((resolve, reject) => {
+module.exports = async (maps: Array<IpfsObservedRemoveMap<string, any> | IpfsObservedRemoveSet<any> | IpfsSignedObservedRemoveMap<string, any> | IpfsSignedObservedRemoveSet<any>>) => new Promise((resolve, reject) => {
   const areEqual = async () => {
     for (const map of maps) {
       if (map.isLoadingHashes) {

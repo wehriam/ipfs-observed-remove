@@ -41,10 +41,10 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
     this.remoteHashQueue = [];
     this.syncCache = new LruCache(100);
     this.on('add', () => {
-      delete this.hash;
+      delete this.ipfsHash;
     });
     this.on('delete', () => {
-      delete this.hash;
+      delete this.ipfsHash;
     });
     this.isLoadingHashes = false;
   }
@@ -66,10 +66,11 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
   boundHandleQueueMessage: (message:{from:string, data:Buffer}) => Promise<void>;
   boundHandleHashMessage: (message:{from:string, data:Buffer}) => Promise<void>;
   db: Object;
-  hash: string | void;
+  ipfsHash: string | void;
   syncCache: LruCache;
   ipfsSyncTimeout: TimeoutID;
   remoteHashQueue: Array<string>;
+  isLoadingHashes: boolean;
 
   async initIpfs() {
     const out = await this.ipfs.id();
@@ -148,9 +149,13 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
    * @return {Promise<string>}
    */
   async getIpfsHash():Promise<string> {
+    if (this.ipfsHash) {
+      return this.ipfsHash;
+    }
     const data = this.dump();
     const files = await this.ipfs.add(Buffer.from(JSON.stringify(data)));
-    return files[0].hash;
+    this.ipfsHash = files[0].hash;
+    return this.ipfsHash;
   }
 
   /**

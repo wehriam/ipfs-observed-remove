@@ -41,10 +41,10 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
     this.remoteHashQueue = [];
     this.syncCache = new LruCache(100);
     this.on('add', () => {
-      delete this.hash;
+      delete this.ipfsHash;
     });
     this.on('delete', () => {
-      delete this.hash;
+      delete this.ipfsHash;
     });
     this.isLoadingHashes = false;
   }
@@ -66,10 +66,11 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
                                                                                  
                                                                                 
              
-                      
+                          
                       
                              
                                  
+                           
 
   async initIpfs() {
     const out = await this.ipfs.id();
@@ -148,9 +149,13 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
    * @return {Promise<string>}
    */
   async getIpfsHash()                 {
+    if (this.ipfsHash) {
+      return this.ipfsHash;
+    }
     const data = this.dump();
     const files = await this.ipfs.add(Buffer.from(JSON.stringify(data)));
-    return files[0].hash;
+    this.ipfsHash = files[0].hash;
+    return this.ipfsHash;
   }
 
   /**
