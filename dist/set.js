@@ -2,10 +2,9 @@
 
 const { inflate, deflate } = require('pako');
 const ObservedRemoveSet = require('observed-remove/dist/set');
-const stringify = require('json-stringify-deterministic');
 const { parser: jsonStreamParser } = require('stream-json/Parser');
 const { streamArray: jsonStreamArray } = require('stream-json/streamers/StreamArray');
-const { default: PQueue } = require('p-queue');
+const LruCache = require('lru-cache');
 
                 
                  
@@ -29,16 +28,25 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
    */
   constructor(ipfs       , topic       , entries              , options          = {}) {
     super(entries, options);
+    if (!ipfs) {
+      throw new Error("Missing required argument 'ipfs'");
+    }
     this.ipfs = ipfs;
     this.topic = topic;
     this.active = true;
     this.disableSync = !!options.disableSync;
     this.boundHandleQueueMessage = this.handleQueueMessage.bind(this);
     this.boundHandleHashMessage = this.handleHashMessage.bind(this);
-    this.boundHandleJoinMessage = this.handleJoinMessage.bind(this);
-    this.readyPromise = this.init();
-    this.syncQueue = new PQueue({ concurrency: 1 });
-    this.remoteHashes = new Set();
+    this.readyPromise = this.initIpfs();
+    this.remoteHashQueue = [];
+    this.syncCache = new LruCache(100);
+    this.on('add', () => {
+      delete this.hash;
+    });
+    this.on('delete', () => {
+      delete this.hash;
+    });
+    this.isLoadingHashes = false;
   }
 
   /**
@@ -57,26 +65,21 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
                        
                                                                                  
                                                                                 
-                                                                                
+             
                       
-                    
-                                           
-                                        
-                            
+                      
+                             
+                                 
 
-  process(queue                     , skipFlush           = false) {
-    delete this.hash;
-    super.process(queue, skipFlush);
-  }
-
-  async init()               {
-    this.ipfsId = (await this.ipfs.id()).id;
+  async initIpfs() {
+    const out = await this.ipfs.id();
+    this.ipfsId = out.id;
     this.on('publish', async (queue) => {
       if (!this.active) {
         return;
       }
       try {
-        const message = Buffer.from(deflate(stringify(queue)));
+        const message = Buffer.from(deflate(JSON.stringify(queue)));
         await this.ipfs.pubsub.publish(this.topic, message);
       } catch (error) {
         this.emit('error', error);
@@ -85,26 +88,46 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
     await this.ipfs.pubsub.subscribe(this.topic, this.boundHandleQueueMessage, { discover: true });
     if (!this.disableSync) {
       await this.ipfs.pubsub.subscribe(`${this.topic}:hash`, this.boundHandleHashMessage, { discover: true });
-      await this.ipfs.pubsub.subscribe(`${this.topic}:join`, this.boundHandleJoinMessage, { discover: true });
-      this.sendJoinMessage();
+      this.waitForPeersThenSendHash();
     }
   }
 
-  async sendJoinMessage()               {
+  async waitForPeersThenSendHash()               {
     try {
-      const peerIds = await this.waitForIpfsPeers();
+      const peerIds = await this.ipfs.pubsub.peers(this.topic, { timeout: 10000 });
       if (peerIds.length === 0) {
         return;
       }
-      if (!this.active) {
-        return;
-      }
-      await this.ipfs.pubsub.publish(`${this.topic}:join`, Buffer.from(this.ipfsId, 'utf8'));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      this.ipfsSync();
     } catch (error) {
       // IPFS connection is closed, don't send join
       if (error.code !== 'ECONNREFUSED') {
         this.emit('error', error);
       }
+    }
+  }
+
+  /**
+   * Publish an IPFS hash of an array containing all of the object's insertions and deletions.
+   * @return {Array<Array<any>>}
+   */
+  async ipfsSync() {
+    if (!this.active) {
+      return;
+    }
+    try {
+      const hash = await this.getIpfsHash();
+      if (!this.active) {
+        return;
+      }
+      if (!this.syncCache.has(hash, true)) {
+        this.syncCache.set(hash, true);
+        await this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(hash, 'utf8'));
+        this.emit('hash', hash);
+      }
+    } catch (error) {
+      this.emit('error', error);
     }
   }
 
@@ -121,52 +144,13 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
   }
 
   /**
-   * Publish an IPFS hash of an array containing all of the object's insertions and deletions.
-   * @return {Array<Array<any>>}
-   */
-  ipfsSync()      {
-    if (this.syncMessagePromise) {
-      return;
-    }
-    this.syncMessagePromise = this.syncQueue.add(async () => {
-      if (!this.active) {
-        delete this.syncMessagePromise;
-        return;
-      }
-      try {
-        const message = await this.getIpfsHash();
-        await this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(message, 'utf8'));
-      } catch (error) {
-        this.emit('error', error);
-      }
-      delete this.syncMessagePromise;
-    }, { priority: 0 }).catch((error) => {
-      this.emit('error', error);
-      delete this.syncMessagePromise;
-    });
-  }
-
-  /**
    * Stores and returns an IPFS hash of the current insertions and deletions
    * @return {Promise<string>}
    */
   async getIpfsHash()                 {
     const data = this.dump();
-    const files = await this.ipfs.add(Buffer.from(stringify(data)));
+    const files = await this.ipfs.add(Buffer.from(JSON.stringify(data)));
     return files[0].hash;
-  }
-
-  /**
-   * Resolves an array of peer ids after one or more IPFS peers connects. Useful for testing.
-   * @return {Promise<void>}
-   */
-  async waitForIpfsPeers()                        {
-    let peerIds = await this.ipfs.pubsub.peers(this.topic);
-    while (this.active && peerIds.length === 0) {
-      peerIds = await this.ipfs.pubsub.peers(this.topic);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-    return peerIds;
   }
 
   /**
@@ -201,19 +185,11 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
             throw error;
           }
         }
-        try {
-          await this.ipfs.pubsub.unsubscribe(`${this.topic}:join`, this.boundHandleJoinMessage);
-        } catch (error) {
-          if (!notSubscribedRegex.test(error.message)) {
-            throw error;
-          }
-        }
       }
     }
-    await this.syncQueue.onIdle();
   }
 
-  async handleQueueMessage(message                           ) {
+  handleQueueMessage(message                           ) {
     if (message.from === this.ipfsId) {
       return;
     }
@@ -228,59 +204,37 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
     }
   }
 
-  async handleHashMessage(message                           ) {
+  handleHashMessage(message                           ) {
     if (!this.active) {
       return;
     }
     if (message.from === this.ipfsId) {
       return;
     }
-    this.remoteHashes.add(message.data.toString('utf8'));
-    if (this.syncHashPromise) {
+    const remoteHash = message.data.toString('utf8');
+    this.remoteHashQueue.push(remoteHash);
+    this.loadIpfsHashes();
+  }
+
+  async loadIpfsHashes() {
+    if (this.isLoadingHashes) {
       return;
     }
-    this.syncHashPromise = this.syncQueue.add(async () => {
-      try {
-        const beforeHash = await this.getIpfsHash();
-        delete this.syncHashPromise;
-        const remoteHashes = this.remoteHashes;
-        this.remoteHashes = new Set();
-        const loadIpfsHashPromises = [];
-        for (const remoteHash of remoteHashes) {
-          if (remoteHash === beforeHash) {
-            continue;
-          }
-          loadIpfsHashPromises.push(this.loadIpfsHash(remoteHash));
+    this.isLoadingHashes = true;
+    try {
+      while (this.remoteHashQueue.length > 0 && this.active && this.isLoadingHashes) {
+        const remoteHash = this.remoteHashQueue.pop();
+        if (this.syncCache.has(remoteHash)) {
+          continue;
         }
-        if (loadIpfsHashPromises.length === 0) {
-          return;
-        }
-        await Promise.all(loadIpfsHashPromises);
-        const afterHash = await this.getIpfsHash();
-        if (!this.active) {
-          return;
-        }
-        if (beforeHash !== afterHash) {
-          return;
-        }
-        let shouldSendHash = false;
-        for (const remoteHash of remoteHashes) {
-          if (afterHash !== remoteHash) {
-            shouldSendHash = true;
-            break;
-          }
-        }
-        if (shouldSendHash) {
-          this.ipfsSync();
-        }
-      } catch (error) {
-        delete this.syncHashPromise;
-        this.emit('error', error);
+        this.syncCache.set(remoteHash, true);
+        await this.loadIpfsHash(remoteHash);
       }
-    }, { priority: 1 }).catch((error) => {
-      delete this.syncHashPromise;
+    } catch (error) {
       this.emit('error', error);
-    });
+    }
+    this.isLoadingHashes = false;
+    this.ipfsSync();
   }
 
   async loadIpfsHash(hash       ) {
@@ -339,16 +293,6 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
       return;
     }
     this.process([insertions, deletions]);
-  }
-
-  async handleJoinMessage(message                           ) {
-    if (!this.active) {
-      return;
-    }
-    if (message.from === this.ipfsId) {
-      return;
-    }
-    await this.ipfsSync();
   }
 }
 

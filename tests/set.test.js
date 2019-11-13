@@ -5,6 +5,7 @@ const { getSwarm, closeAllNodes } = require('./lib/ipfs');
 const { IpfsObservedRemoveSet } = require('../src');
 const { generateValue } = require('./lib/values');
 const expect = require('expect');
+const waitForHashing = require('./lib/wait-for-hashing');
 
 jest.setTimeout(30000);
 
@@ -131,8 +132,7 @@ describe('IPFS Set', () => {
     const alice = new IpfsObservedRemoveSet(nodes[0], topic, [A, B, C]);
     const bob = new IpfsObservedRemoveSet(nodes[1], topic, [X, Y, Z]);
     await Promise.all([bob.readyPromise, alice.readyPromise]);
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    await Promise.all([alice, bob].map((map) => map.syncQueue.onIdle()));
+    await waitForHashing([alice, bob]);
     await alice.shutdown();
     await bob.shutdown();
   });

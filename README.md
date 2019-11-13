@@ -70,10 +70,9 @@ bob.get('a'); // 1
 
 -   [constructor](#constructor)
     -   [Parameters](#parameters)
--   [dump](#dump)
 -   [ipfsSync](#ipfssync)
+-   [dump](#dump)
 -   [getIpfsHash](#getipfshash)
--   [waitForIpfsPeers](#waitforipfspeers)
 -   [ipfsPeerCount](#ipfspeercount)
 -   [shutdown](#shutdown)
 -   [IpfsObservedRemoveSet#readyPromise](#ipfsobservedremovesetreadypromise)
@@ -91,27 +90,21 @@ Create an observed-remove CRDT.
     -   `options.maxAge` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Max age of insertion/deletion identifiers (optional, default `5000`)
     -   `options.bufferPublishing` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Interval by which to buffer 'publish' events (optional, default `20`)
 
-### dump
-
-Return a sorted array containing all of the set's insertions and deletions.
-
 ### ipfsSync
 
 Publish an IPFS hash of an array containing all of the object's insertions and deletions.
 
 Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;any>>** 
 
+### dump
+
+Return a sorted array containing all of the set's insertions and deletions.
+
 ### getIpfsHash
 
 Stores and returns an IPFS hash of the current insertions and deletions
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** 
-
-### waitForIpfsPeers
-
-Resolves an array of peer ids after one or more IPFS peers connects. Useful for testing.
-
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;void>** 
 
 ### ipfsPeerCount
 
@@ -139,10 +132,9 @@ Type: [Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Glob
 
 -   [constructor](#constructor)
     -   [Parameters](#parameters)
--   [dump](#dump)
 -   [ipfsSync](#ipfssync)
+-   [dump](#dump)
 -   [getIpfsHash](#getipfshash)
--   [waitForIpfsPeers](#waitforipfspeers)
 -   [ipfsPeerCount](#ipfspeercount)
 -   [shutdown](#shutdown)
 -   [IpfsObservedRemoveSet#readyPromise](#ipfsobservedremovesetreadypromise)
@@ -160,27 +152,21 @@ Create an observed-remove CRDT.
     -   `options.maxAge` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Max age of insertion/deletion identifiers (optional, default `5000`)
     -   `options.bufferPublishing` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Interval by which to buffer 'publish' events (optional, default `20`)
 
-### dump
-
-Return a sorted array containing all of the set's insertions and deletions.
-
 ### ipfsSync
 
 Publish an IPFS hash of an array containing all of the object's insertions and deletions.
 
 Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;any>>** 
 
+### dump
+
+Return a sorted array containing all of the set's insertions and deletions.
+
 ### getIpfsHash
 
 Stores and returns an IPFS hash of the current insertions and deletions
 
 Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** 
-
-### waitForIpfsPeers
-
-Resolves an array of peer ids after one or more IPFS peers connects. Useful for testing.
-
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;void>** 
 
 ### ipfsPeerCount
 

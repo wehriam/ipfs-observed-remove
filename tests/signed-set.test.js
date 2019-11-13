@@ -6,6 +6,7 @@ const { getSigner, generateId, IpfsSignedObservedRemoveSet, InvalidSignatureErro
 const { generateValue } = require('./lib/values');
 const expect = require('expect');
 const NodeRSA = require('node-rsa');
+const waitForHashing = require('./lib/wait-for-hashing');
 
 const privateKey = new NodeRSA({ b: 512 });
 const sign = getSigner(privateKey.exportKey('pkcs1-private-pem'));
@@ -226,8 +227,7 @@ describe('IPFS Signed Set', () => {
     const alice = new IpfsSignedObservedRemoveSet(nodes[0], topic, [[A, idA, sign(A, idA)], [B, idB, sign(B, idB)], [C, idC, sign(C, idC)]], { key });
     const bob = new IpfsSignedObservedRemoveSet(nodes[1], topic, [[X, idX, sign(X, idX)], [Y, idY, sign(Y, idY)], [Z, idZ, sign(Z, idZ)]], { key });
     await Promise.all([bob.readyPromise, alice.readyPromise]);
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    await Promise.all([alice, bob].map((map) => map.syncQueue.onIdle()));
+    await waitForHashing([alice, bob]);
     await alice.shutdown();
     await bob.shutdown();
   });
