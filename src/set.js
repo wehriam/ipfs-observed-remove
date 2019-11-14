@@ -95,15 +95,11 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
 
   async waitForPeersThenSendHash():Promise<void> {
     try {
-      const peerIds = await this.ipfs.pubsub.peers(this.topic, { timeout: 10000 });
-      if (peerIds.length === 0) {
-        return;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await this.ipfs.pubsub.peers(this.topic, { timeout: 10000 });
       this.ipfsSync();
     } catch (error) {
-      // IPFS connection is closed, don't send join
-      if (error.code !== 'ECONNREFUSED') {
+      // IPFS connection is closed or timed out, don't send join
+      if (error.code !== 'ECONNREFUSED' && error.name !== 'TimeoutError') {
         this.emit('error', error);
       }
     }
