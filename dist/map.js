@@ -5,6 +5,7 @@ const ObservedRemoveMap = require('observed-remove/dist/map');
 const { parser: jsonStreamParser } = require('stream-json/Parser');
 const { streamArray: jsonStreamArray } = require('stream-json/streamers/StreamArray');
 const LruCache = require('lru-cache');
+const { debounce } = require('lodash');
 
                 
                  
@@ -47,6 +48,7 @@ class IpfsObservedRemoveMap       extends ObservedRemoveMap       { // eslint-di
       delete this.ipfsHash;
     });
     this.isLoadingHashes = false;
+    this.debouncedIpfsSync = debounce(this.ipfsSync.bind(this), 1000);
   }
 
   /**
@@ -68,9 +70,9 @@ class IpfsObservedRemoveMap       extends ObservedRemoveMap       { // eslint-di
              
                           
                       
-                             
                                  
                            
+                                         
 
   async initIpfs() {
     const out = await this.ipfs.id();
@@ -96,7 +98,7 @@ class IpfsObservedRemoveMap       extends ObservedRemoveMap       { // eslint-di
   async waitForPeersThenSendHash()               {
     try {
       await this.ipfs.pubsub.peers(this.topic, { timeout: 10000 });
-      this.ipfsSync();
+      this.debouncedIpfsSync();
     } catch (error) {
       // IPFS connection is closed or timed out, don't send join
       if (error.code !== 'ECONNREFUSED' && error.name !== 'TimeoutError') {
@@ -235,7 +237,7 @@ class IpfsObservedRemoveMap       extends ObservedRemoveMap       { // eslint-di
       this.emit('error', error);
     }
     this.isLoadingHashes = false;
-    this.ipfsSync();
+    this.debouncedIpfsSync();
   }
 
   async loadIpfsHash(hash       ) {

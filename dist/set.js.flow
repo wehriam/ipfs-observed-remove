@@ -5,6 +5,7 @@ const ObservedRemoveSet = require('observed-remove/dist/set');
 const { parser: jsonStreamParser } = require('stream-json/Parser');
 const { streamArray: jsonStreamArray } = require('stream-json/streamers/StreamArray');
 const LruCache = require('lru-cache');
+const { debounce } = require('lodash');
 
 type Options = {
   maxAge?:number,
@@ -47,6 +48,7 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
       delete this.ipfsHash;
     });
     this.isLoadingHashes = false;
+    this.debouncedIpfsSync = debounce(this.ipfsSync.bind(this), 1000);
   }
 
   /**
@@ -68,9 +70,9 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
   db: Object;
   ipfsHash: string | void;
   syncCache: LruCache;
-  ipfsSyncTimeout: TimeoutID;
   remoteHashQueue: Array<string>;
   isLoadingHashes: boolean;
+  debouncedIpfsSync: () => Promise<void>;
 
   async initIpfs() {
     const out = await this.ipfs.id();
@@ -96,7 +98,7 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
   async waitForPeersThenSendHash():Promise<void> {
     try {
       await this.ipfs.pubsub.peers(this.topic, { timeout: 10000 });
-      this.ipfsSync();
+      this.debouncedIpfsSync();
     } catch (error) {
       // IPFS connection is closed or timed out, don't send join
       if (error.code !== 'ECONNREFUSED' && error.name !== 'TimeoutError') {
@@ -235,7 +237,7 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
       this.emit('error', error);
     }
     this.isLoadingHashes = false;
-    this.ipfsSync();
+    this.debouncedIpfsSync();
   }
 
   async loadIpfsHash(hash:string) {

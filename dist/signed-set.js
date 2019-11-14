@@ -5,6 +5,7 @@ const SignedObservedRemoveSet = require('observed-remove/dist/signed-set');
 const { parser: jsonStreamParser } = require('stream-json/Parser');
 const { streamArray: jsonStreamArray } = require('stream-json/streamers/StreamArray');
 const LruCache = require('lru-cache');
+const { debounce } = require('lodash');
 
                 
                  
@@ -47,6 +48,7 @@ class IpfsSignedObservedRemoveSet    extends SignedObservedRemoveSet    { // esl
       delete this.ipfsHash;
     });
     this.isLoadingHashes = false;
+    this.debouncedIpfsSync = debounce(this.ipfsSync.bind(this), 1000);
   }
 
   /**
@@ -68,9 +70,9 @@ class IpfsSignedObservedRemoveSet    extends SignedObservedRemoveSet    { // esl
              
                           
                       
-                             
                                  
                            
+                                         
 
   async initIpfs() {
     const out = await this.ipfs.id();
@@ -91,12 +93,13 @@ class IpfsSignedObservedRemoveSet    extends SignedObservedRemoveSet    { // esl
       await this.ipfs.pubsub.subscribe(`${this.topic}:hash`, this.boundHandleHashMessage, { discover: true });
       this.waitForPeersThenSendHash();
     }
+    this.debouncedIpfsSync = debounce(this.ipfsSync.bind(this), 1000);
   }
 
   async waitForPeersThenSendHash()               {
     try {
       await this.ipfs.pubsub.peers(this.topic, { timeout: 10000 });
-      this.ipfsSync();
+      this.debouncedIpfsSync();
     } catch (error) {
       // IPFS connection is closed or timed out, don't send join
       if (error.code !== 'ECONNREFUSED' && error.name !== 'TimeoutError') {
@@ -235,7 +238,7 @@ class IpfsSignedObservedRemoveSet    extends SignedObservedRemoveSet    { // esl
       this.emit('error', error);
     }
     this.isLoadingHashes = false;
-    this.ipfsSync();
+    this.debouncedIpfsSync();
   }
 
   async loadIpfsHash(hash       ) {
