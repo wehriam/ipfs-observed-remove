@@ -241,7 +241,7 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
   }
 
   async loadIpfsHash(hash:string) {
-    const stream = this.ipfs.catReadableStream(hash);
+    const stream = this.ipfs.catReadableStream(hash, { timeout: 30000 });
     const parser = jsonStreamParser();
     const streamArray = jsonStreamArray();
     const pipeline = stream.pipe(parser);
@@ -266,6 +266,12 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
     });
     try {
       await new Promise((resolve, reject) => {
+        stream.on('error', (error) => {
+          reject(error);
+        });
+        streamArray.on('error', (error) => {
+          reject(error);
+        });
         pipeline.on('error', (error) => {
           reject(error);
         });
