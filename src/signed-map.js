@@ -11,8 +11,8 @@ type Options = {
   maxAge?:number,
   bufferPublishing?:number,
   key?: any,
-  format?: string,
-  disableSync?: boolean
+  disableSync?: boolean,
+  format?: string
 };
 
 const notSubscribedRegex = /Not subscribed/;
