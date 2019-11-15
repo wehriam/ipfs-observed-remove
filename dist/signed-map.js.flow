@@ -104,6 +104,9 @@ class IpfsSignedObservedRemoveMap<K, V> extends SignedObservedRemoveMap<K, V> { 
       if (error.code !== 'ECONNREFUSED' && error.name !== 'TimeoutError') {
         this.emit('error', error);
       }
+      if (this.active && error.name === 'TimeoutError') {
+        this.debouncedIpfsSync();
+      }
     }
   }
 

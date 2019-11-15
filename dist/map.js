@@ -104,6 +104,9 @@ class IpfsObservedRemoveMap       extends ObservedRemoveMap       { // eslint-di
       if (error.code !== 'ECONNREFUSED' && error.name !== 'TimeoutError') {
         this.emit('error', error);
       }
+      if (this.active && error.name === 'TimeoutError') {
+        this.debouncedIpfsSync();
+      }
     }
   }
 

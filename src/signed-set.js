@@ -105,6 +105,9 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
       if (error.code !== 'ECONNREFUSED' && error.name !== 'TimeoutError') {
         this.emit('error', error);
       }
+      if (this.active && error.name === 'TimeoutError') {
+        this.debouncedIpfsSync();
+      }
     }
   }
 
