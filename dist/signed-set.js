@@ -97,16 +97,24 @@ class IpfsSignedObservedRemoveSet    extends SignedObservedRemoveSet    { // esl
   }
 
   async waitForPeersThenSendHash()               {
+    if (!this.active) {
+      return;
+    }
     try {
-      await this.ipfs.pubsub.peers(this.topic, { timeout: 10000 });
-      this.debouncedIpfsSync();
+      const peerIds = await this.ipfs.pubsub.peers(this.topic, { timeout: 10000 });
+      if (peerIds.length > 0) {
+        this.debouncedIpfsSync();
+      } else {
+        await new Promise((resolve) => setTimeout(resolve, 10000));
+        this.waitForPeersThenSendHash();
+      }
     } catch (error) {
       // IPFS connection is closed or timed out, don't send join
       if (error.code !== 'ECONNREFUSED' && error.name !== 'TimeoutError') {
         this.emit('error', error);
       }
       if (this.active && error.name === 'TimeoutError') {
-        this.debouncedIpfsSync();
+        this.waitForPeersThenSendHash();
       }
     }
   }
