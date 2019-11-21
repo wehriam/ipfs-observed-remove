@@ -106,7 +106,9 @@ class IpfsSignedObservedRemoveSet    extends SignedObservedRemoveSet    { // esl
         this.debouncedIpfsSync();
       } else {
         await new Promise((resolve) => setTimeout(resolve, 10000));
-        this.waitForPeersThenSendHash();
+        setImmediate(() => {
+          this.waitForPeersThenSendHash();
+        });
       }
     } catch (error) {
       // IPFS connection is closed or timed out, don't send join
@@ -114,7 +116,9 @@ class IpfsSignedObservedRemoveSet    extends SignedObservedRemoveSet    { // esl
         this.emit('error', error);
       }
       if (this.active && error.name === 'TimeoutError') {
-        this.waitForPeersThenSendHash();
+        setImmediate(() => {
+          this.waitForPeersThenSendHash();
+        });
       }
     }
   }
