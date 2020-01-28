@@ -40,7 +40,10 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
     this.readyPromise = this.initIpfs();
     this.remoteHashQueue = [];
     this.syncCache = new LruCache(100);
-    this.peersCache = new LruCache(100);
+    this.peersCache = new LruCache({
+      max: 100,
+      maxAge: 1000 * 60,
+    });
     this.hasNewPeers = false;
     this.on('set', () => {
       delete this.ipfsHash;

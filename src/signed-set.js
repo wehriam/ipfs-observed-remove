@@ -41,7 +41,10 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
     this.readyPromise = this.initIpfs();
     this.remoteHashQueue = [];
     this.syncCache = new LruCache(100);
-    this.peersCache = new LruCache(100);
+    this.peersCache = new LruCache({
+      max: 100,
+      maxAge: 1000 * 60,
+    });
     this.hasNewPeers = false;
     this.on('add', () => {
       delete this.ipfsHash;
