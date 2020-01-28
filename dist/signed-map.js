@@ -41,6 +41,8 @@ class IpfsSignedObservedRemoveMap       extends SignedObservedRemoveMap       { 
     this.readyPromise = this.initIpfs();
     this.remoteHashQueue = [];
     this.syncCache = new LruCache(100);
+    this.peersCache = new LruCache(100);
+    this.hasNewPeers = false;
     this.on('set', () => {
       delete this.ipfsHash;
     });
@@ -70,6 +72,8 @@ class IpfsSignedObservedRemoveMap       extends SignedObservedRemoveMap       { 
              
                           
                       
+                       
+                       
                                  
                            
                                          
@@ -135,7 +139,8 @@ class IpfsSignedObservedRemoveMap       extends SignedObservedRemoveMap       { 
       if (!this.active) {
         return;
       }
-      if (!this.syncCache.has(hash, true)) {
+      if (!this.syncCache.has(hash, true) || this.hasNewPeers) {
+        this.hasNewPeers = false;
         this.syncCache.set(hash, true);
         await this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(hash, 'utf8'));
         this.emit('hash', hash);
@@ -228,6 +233,10 @@ class IpfsSignedObservedRemoveMap       extends SignedObservedRemoveMap       { 
     }
     if (message.from === this.ipfsId) {
       return;
+    }
+    if (!this.peersCache.has(message.from)) {
+      this.hasNewPeers = true;
+      this.peersCache.set(message.from, true);
     }
     const remoteHash = message.data.toString('utf8');
     this.remoteHashQueue.push(remoteHash);
