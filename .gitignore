@@ -27,3 +27,4 @@ node_modules
 
 # Users Environment Variables
 .lock-wscript
+go-ipfs

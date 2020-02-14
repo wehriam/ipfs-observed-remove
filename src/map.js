@@ -6,6 +6,7 @@ const { parser: jsonStreamParser } = require('stream-json/Parser');
 const { streamArray: jsonStreamArray } = require('stream-json/streamers/StreamArray');
 const LruCache = require('lru-cache');
 const { debounce } = require('lodash');
+const asyncIterableToReadableStream = require('async-iterable-to-readable-stream');
 
 type Options = {
   maxAge?:number,
@@ -106,7 +107,7 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
       return;
     }
     try {
-      const peerIds = await this.ipfs.pubsub.peers(this.topic, { timeout: 10000 });
+      const peerIds = await this.ipfs.pubsub.peers(this.topic, { timeout: '10s' });
       if (peerIds.length > 0) {
         this.debouncedIpfsSync();
       } else {
@@ -173,9 +174,12 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
       return this.ipfsHash;
     }
     const data = this.dump();
-    const files = await this.ipfs.add(Buffer.from(JSON.stringify(data)));
-    this.ipfsHash = files[0].hash;
-    return this.ipfsHash;
+    const files = this.ipfs.add(Buffer.from(JSON.stringify(data)));
+    for await (const file of files) {
+      this.ipfsHash = file.path;
+      return this.ipfsHash;
+    }
+    throw new Error('Dump was not added to ipfs');
   }
 
   /**
@@ -267,7 +271,7 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
   }
 
   async loadIpfsHash(hash:string) {
-    const stream = this.ipfs.catReadableStream(hash, { timeout: 30000 });
+    const stream = asyncIterableToReadableStream(this.ipfs.cat(hash, { timeout: '30s' }));
     const parser = jsonStreamParser();
     const streamArray = jsonStreamArray();
     const pipeline = stream.pipe(parser);
