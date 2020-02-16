@@ -176,7 +176,7 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
     const data = this.dump();
     const files = this.ipfs.add(Buffer.from(JSON.stringify(data)));
     for await (const file of files) {
-      this.ipfsHash = file.path;
+      this.ipfsHash = file.cid.toString();
       return this.ipfsHash;
     }
     throw new Error('Dump was not added to ipfs');
