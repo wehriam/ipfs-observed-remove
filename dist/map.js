@@ -64,22 +64,22 @@ class IpfsObservedRemoveMap       extends ObservedRemoveMap       { // eslint-di
    * @readonly
    */
 
-               
-                
-                              
-                  
-                 
                        
-                                                                                 
-                                                                                
-             
+                        
+                                      
                           
-                      
-                       
-                       
-                                 
-                           
+                         
+                               
+                                                                                         
+                                                                                        
+                     
+                                  
+                              
+                               
+                               
                                          
+                                   
+                                                 
 
   async initIpfs() {
     const out = await this.ipfs.id();
@@ -107,7 +107,7 @@ class IpfsObservedRemoveMap       extends ObservedRemoveMap       { // eslint-di
       return;
     }
     try {
-      const peerIds = await this.ipfs.pubsub.peers(this.topic, { timeout: '10s' });
+      const peerIds = await this.ipfs.pubsub.peers(this.topic, { timeout: 10000 });
       if (peerIds.length > 0) {
         this.debouncedIpfsSync();
       } else {
@@ -271,7 +271,7 @@ class IpfsObservedRemoveMap       extends ObservedRemoveMap       { // eslint-di
   }
 
   async loadIpfsHash(hash       ) {
-    const stream = asyncIterableToReadableStream(this.ipfs.cat(hash, { timeout: '30s' }));
+    const stream = asyncIterableToReadableStream(this.ipfs.cat(hash, { timeout: 30000 }));
     const parser = jsonStreamParser();
     const streamArray = jsonStreamArray();
     const pipeline = stream.pipe(parser);
@@ -297,12 +297,15 @@ class IpfsObservedRemoveMap       extends ObservedRemoveMap       { // eslint-di
     try {
       await new Promise((resolve, reject) => {
         stream.on('error', (error) => {
+          console.error('STREAM ERROR');
           reject(error);
         });
         streamArray.on('error', (error) => {
+          console.error('STREAM ARRAY ERROR');
           reject(error);
         });
         pipeline.on('error', (error) => {
+          console.error('PIPELINE ERROR');
           reject(error);
         });
         pipeline.on('end', () => {

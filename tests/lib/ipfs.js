@@ -4,6 +4,9 @@ const DaemonFactory = require('ipfsd-ctl');
 const ipfsBin = require('go-ipfs-dep').path();
 const ipfsHttpModule = require('ipfs-http-client');
 
+let nodes:Array<Object> = [];
+let pids: Array<number> = [];
+
 const factory = DaemonFactory.createFactory({
   type: 'go',
   test: true,
@@ -40,12 +43,22 @@ module.exports.getGatewayIpfsNode = async (port:number) => {
   };
   const daemon = await factory.spawn(options);
   await daemon.api.id();
+  const pid = await daemon.pid();
+  pids.push(pid);
+  console.log(`Spawned ${pid}`);
   return daemon.api;
 };
 
 module.exports.closeAllNodes = async () => {
-  nodes = [];
+  console.log(`Closing ${pids.length} node${pids.length === 1 ? '' : 's'}: ${pids.join(', ')}`);
   await factory.clean();
+  for (const pid of pids) {
+    process.kill(pid);
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    process.kill(pid);
+  }
+  nodes = [];
+  pids = [];
 };
 
 const getIpfsNode = module.exports.getIpfsNode = async (bootstrap:Array<string> = []) => {
@@ -74,10 +87,11 @@ const getIpfsNode = module.exports.getIpfsNode = async (bootstrap:Array<string> 
   };
   const daemon = await factory.spawn(options);
   await daemon.api.id();
+  const pid = await daemon.pid();
+  pids.push(pid);
+  console.log(`Spawned ${pid}`);
   return daemon.api;
 };
-
-let nodes:Array<Object> = [];
 
 module.exports.getSwarm = async (count:number) => {
   if (nodes.length < count) {

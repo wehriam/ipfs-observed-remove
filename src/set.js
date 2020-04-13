@@ -64,22 +64,22 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
    * @readonly
    */
 
-  ipfs: Object;
-  topic: string;
-  readyPromise: Promise<void>;
-  active: boolean;
-  ipfsId: string;
-  disableSync: boolean;
-  boundHandleQueueMessage: (message:{from:string, data:Buffer}) => Promise<void>;
-  boundHandleHashMessage: (message:{from:string, data:Buffer}) => Promise<void>;
-  db: Object;
-  ipfsHash: string | void;
-  syncCache: LruCache;
-  peersCache: LruCache;
-  hasNewPeers: boolean;
-  remoteHashQueue: Array<string>;
-  isLoadingHashes: boolean;
-  debouncedIpfsSync: () => Promise<void>;
+  declare ipfs: Object;
+  declare topic: string;
+  declare readyPromise: Promise<void>;
+  declare active: boolean;
+  declare ipfsId: string;
+  declare disableSync: boolean;
+  declare boundHandleQueueMessage: (message:{from:string, data:Buffer}) => Promise<void>;
+  declare boundHandleHashMessage: (message:{from:string, data:Buffer}) => Promise<void>;
+  declare db: Object;
+  declare ipfsHash: string | void;
+  declare syncCache: LruCache;
+  declare peersCache: LruCache;
+  declare hasNewPeers: boolean;
+  declare remoteHashQueue: Array<string>;
+  declare isLoadingHashes: boolean;
+  declare debouncedIpfsSync: () => Promise<void>;
 
   async initIpfs() {
     const out = await this.ipfs.id();
@@ -107,7 +107,7 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
       return;
     }
     try {
-      const peerIds = await this.ipfs.pubsub.peers(this.topic, { timeout: '10s' });
+      const peerIds = await this.ipfs.pubsub.peers(this.topic, { timeout: 10000 });
       if (peerIds.length > 0) {
         this.debouncedIpfsSync();
       } else {
@@ -271,7 +271,7 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
   }
 
   async loadIpfsHash(hash:string) {
-    const stream = asyncIterableToReadableStream(this.ipfs.cat(hash, { timeout: '30s' }));
+    const stream = asyncIterableToReadableStream(this.ipfs.cat(hash, { timeout: 30000 }));
     const parser = jsonStreamParser();
     const streamArray = jsonStreamArray();
     const pipeline = stream.pipe(parser);

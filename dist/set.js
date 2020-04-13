@@ -64,22 +64,22 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
    * @readonly
    */
 
-               
-                
-                              
-                  
-                 
                        
-                                                                                 
-                                                                                
-             
+                        
+                                      
                           
-                      
-                       
-                       
-                                 
-                           
+                         
+                               
+                                                                                         
+                                                                                        
+                     
+                                  
+                              
+                               
+                               
                                          
+                                   
+                                                 
 
   async initIpfs() {
     const out = await this.ipfs.id();
@@ -107,7 +107,7 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
       return;
     }
     try {
-      const peerIds = await this.ipfs.pubsub.peers(this.topic, { timeout: '10s' });
+      const peerIds = await this.ipfs.pubsub.peers(this.topic, { timeout: 10000 });
       if (peerIds.length > 0) {
         this.debouncedIpfsSync();
       } else {
@@ -271,7 +271,7 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
   }
 
   async loadIpfsHash(hash       ) {
-    const stream = asyncIterableToReadableStream(this.ipfs.cat(hash, { timeout: '30s' }));
+    const stream = asyncIterableToReadableStream(this.ipfs.cat(hash, { timeout: 30000 }));
     const parser = jsonStreamParser();
     const streamArray = jsonStreamArray();
     const pipeline = stream.pipe(parser);
