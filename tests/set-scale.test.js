@@ -1,5 +1,6 @@
 // @flow
 
+require('jest-extended');
 const uuid = require('uuid');
 const stringify = require('json-stringify-deterministic');
 const { getSwarm, closeAllNodes } = require('./lib/ipfs');

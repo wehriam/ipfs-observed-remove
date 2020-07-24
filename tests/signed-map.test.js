@@ -1,5 +1,6 @@
 // @flow
 
+require('jest-extended');
 const uuid = require('uuid');
 const { getSwarm, closeAllNodes } = require('./lib/ipfs');
 const { getSigner, generateId, IpfsSignedObservedRemoveMap, InvalidSignatureError } = require('../src');
@@ -150,8 +151,8 @@ describe('IPFS Signed Map', () => {
     expect(bob.get(keyX)).toEqual(valueX);
     expect(bob.get(keyY)).toEqual(valueY);
     expect(bob.get(keyZ)).toEqual(valueZ);
-    expect([...alice]).toEqual([[keyX, valueX], [keyY, valueY], [keyZ, valueZ]]);
-    expect([...bob]).toEqual([[keyX, valueX], [keyY, valueY], [keyZ, valueZ]]);
+    expect([...alice]).toIncludeSameMembers([[keyX, valueX], [keyY, valueY], [keyZ, valueZ]]);
+    expect([...bob]).toIncludeSameMembers([[keyX, valueX], [keyY, valueY], [keyZ, valueZ]]);
     bob.deleteSigned(keyX, id1, sign(keyX, id1));
     bob.deleteSigned(keyY, id2, sign(keyY, id2));
     bob.deleteSigned(keyZ, id3, sign(keyZ, id3));
@@ -164,8 +165,8 @@ describe('IPFS Signed Map', () => {
     expect(bob.get(keyX)).toBeUndefined();
     expect(bob.get(keyY)).toBeUndefined();
     expect(bob.get(keyZ)).toBeUndefined();
-    expect([...alice]).toEqual([]);
-    expect([...bob]).toEqual([]);
+    expect([...alice]).toIncludeSameMembers([]);
+    expect([...bob]).toIncludeSameMembers([]);
     await alice.shutdown();
     await bob.shutdown();
   });

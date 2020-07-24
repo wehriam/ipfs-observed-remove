@@ -1,6 +1,5 @@
 //      
 
-const { inflate, deflate } = require('pako');
 const ObservedRemoveSet = require('observed-remove/dist/set');
 const { parser: jsonStreamParser } = require('stream-json/Parser');
 const { streamArray: jsonStreamArray } = require('stream-json/streamers/StreamArray');
@@ -89,7 +88,7 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
         return;
       }
       try {
-        const message = Buffer.from(deflate(JSON.stringify(queue)));
+        const message = Buffer.from(JSON.stringify(queue));
         await this.ipfs.pubsub.publish(this.topic, message);
       } catch (error) {
         this.emit('error', error);
@@ -174,12 +173,9 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
       return this.ipfsHash;
     }
     const data = this.dump();
-    const files = this.ipfs.add(Buffer.from(JSON.stringify(data)));
-    for await (const file of files) {
-      this.ipfsHash = file.cid.toString();
-      return this.ipfsHash;
-    }
-    throw new Error('Dump was not added to ipfs');
+    const file = await this.ipfs.add(Buffer.from(JSON.stringify(data)));
+    this.ipfsHash = file.cid.toString();
+    return this.ipfsHash;
   }
 
   /**
@@ -226,7 +222,7 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
       return;
     }
     try {
-      const queue = JSON.parse(Buffer.from(inflate(message.data)).toString('utf8'));
+      const queue = JSON.parse(Buffer.from(message.data).toString('utf8'));
       this.process(queue);
     } catch (error) {
       this.emit('error', error);

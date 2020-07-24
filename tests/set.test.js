@@ -1,5 +1,6 @@
 // @flow
 
+require('jest-extended');
 const uuid = require('uuid');
 const { getSwarm, closeAllNodes } = require('./lib/ipfs');
 const { IpfsObservedRemoveSet } = require('../src');
@@ -62,16 +63,16 @@ describe('IPFS Set', () => {
     while (aliceAddCount !== 3 || bobAddCount !== 3) {
       await new Promise((resolve) => setTimeout(resolve, 20));
     }
-    expect([...alice]).toEqual([X, Y, Z]);
-    expect([...bob]).toEqual([X, Y, Z]);
+    expect([...alice]).toIncludeSameMembers([X, Y, Z]);
+    expect([...bob]).toIncludeSameMembers([X, Y, Z]);
     bob.delete(X);
     bob.delete(Y);
     bob.delete(Z);
     while (aliceDeleteCount !== 3 || bobDeleteCount !== 3) {
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
-    expect([...alice]).toEqual([]);
-    expect([...bob]).toEqual([]);
+    expect([...alice]).toIncludeSameMembers([]);
+    expect([...bob]).toIncludeSameMembers([]);
     await alice.shutdown();
     await bob.shutdown();
   });
