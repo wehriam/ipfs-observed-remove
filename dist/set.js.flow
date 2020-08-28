@@ -173,7 +173,7 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
       return this.ipfsHash;
     }
     const data = this.dump();
-    const file = await this.ipfs.add(Buffer.from(JSON.stringify(data)));
+    const file = await this.ipfs.add(Buffer.from(JSON.stringify(data)), { wrapWithDirectory: false, recursive: false, pin: false });
     this.ipfsHash = file.cid.toString();
     return this.ipfsHash;
   }

@@ -6533,10 +6533,10 @@ object.values@^1.1.1:
     function-bind "^1.1.1"
     has "^1.0.3"
 
-observed-remove@2.2.26:
-  version "2.2.26"
-  resolved "https://registry.yarnpkg.com/observed-remove/-/observed-remove-2.2.26.tgz#ceb4f5ef568acdb1665e2546828e1d0d1f71bf62"
-  integrity sha512-/pmsriAQlYgRzJNkdWaSboyOHwVRzCWjgrrNwlHwRXZsZ26rzZIv0HFavkFRkNRn2GxL2goq14lXTPNRc3nIIw==
+observed-remove@2.2.27:
+  version "2.2.27"
+  resolved "https://registry.yarnpkg.com/observed-remove/-/observed-remove-2.2.27.tgz#ab15174f4cb7a0d4df182c37a9776486c476f886"
+  integrity sha512-cVPnulspGtGBqfNGn2KiF1IJ0Q7H6nPsIuv/7w7lYof/r7uIP/jcXYpN2bmIFoq0TL9Wdz52THotGFCNj0v+nQ==
   dependencies:
     "@bunchtogether/hash-object" "^1.0.3"
     json-stringify-deterministic "^1.0.1"
