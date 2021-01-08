@@ -2,6 +2,8 @@
 
 const SignedObservedRemoveSet = require('observed-remove/dist/signed-set');
 const { parser: jsonStreamParser } = require('stream-json/Parser');
+const CID = require('cids');
+const { default: AbortController } = require('abort-controller');
 const { streamArray: jsonStreamArray } = require('stream-json/streamers/StreamArray');
 const LruCache = require('lru-cache');
 const { debounce } = require('lodash');
@@ -40,6 +42,7 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
     this.boundHandleHashMessage = this.handleHashMessage.bind(this);
     this.readyPromise = this.initIpfs();
     this.remoteHashQueue = [];
+    this.abortControllers = [];
     this.syncCache = new LruCache(100);
     this.peersCache = new LruCache({
       max: 100,
@@ -80,6 +83,7 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
   declare remoteHashQueue: Array<string>;
   declare isLoadingHashes: boolean;
   declare debouncedIpfsSync: () => Promise<void>;
+  declare abortControllers: Array<AbortController>;
 
   async initIpfs() {
     const out = await this.ipfs.id();
@@ -95,20 +99,29 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
         this.emit('error', error);
       }
     });
-    await this.ipfs.pubsub.subscribe(this.topic, this.boundHandleQueueMessage, { discover: true });
-    if (!this.disableSync) {
-      await this.ipfs.pubsub.subscribe(`${this.topic}:hash`, this.boundHandleHashMessage, { discover: true });
-      this.waitForPeersThenSendHash();
+    const abortController = new AbortController();
+    this.abortControllers.push(abortController);
+    try {
+      await this.ipfs.pubsub.subscribe(this.topic, this.boundHandleQueueMessage, { discover: true, signal: abortController.signal });
+      if (!this.disableSync) {
+        await this.ipfs.pubsub.subscribe(`${this.topic}:hash`, this.boundHandleHashMessage, { discover: true, signal: abortController.signal });
+        this.waitForPeersThenSendHash();
+      }
+    } catch (error) {
+      if (error.type !== 'aborted') {
+        throw error;
+      }
     }
-    this.debouncedIpfsSync = debounce(this.ipfsSync.bind(this), 1000);
   }
 
   async waitForPeersThenSendHash():Promise<void> {
     if (!this.active) {
       return;
     }
+    const abortController = new AbortController();
+    this.abortControllers.push(abortController);
     try {
-      const peerIds = await this.ipfs.pubsub.peers(this.topic, { timeout: 10000 });
+      const peerIds = await this.ipfs.pubsub.peers(this.topic, { timeout: 10000, signal: abortController.signal });
       if (peerIds.length > 0) {
         this.debouncedIpfsSync();
       } else {
@@ -119,7 +132,7 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
       }
     } catch (error) {
       // IPFS connection is closed or timed out, don't send join
-      if (error.code !== 'ECONNREFUSED' && error.name !== 'TimeoutError') {
+      if (error.type !== 'aborted' && error.code !== 'ECONNREFUSED' && error.name !== 'TimeoutError') {
         this.emit('error', error);
       }
       if (this.active && error.name === 'TimeoutError') {
@@ -128,6 +141,7 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
         });
       }
     }
+    this.abortControllers = this.abortControllers.filter((x) => x !== abortController);
   }
 
   /**
@@ -138,6 +152,8 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
     if (!this.active) {
       return;
     }
+    const abortController = new AbortController();
+    this.abortControllers.push(abortController);
     try {
       const hash = await this.getIpfsHash();
       if (!this.active) {
@@ -146,12 +162,15 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
       if (!this.syncCache.has(hash, true) || this.hasNewPeers) {
         this.hasNewPeers = false;
         this.syncCache.set(hash, true);
-        await this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(hash, 'utf8'));
+        await this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(hash, 'utf8'), { signal: abortController.signal });
         this.emit('hash', hash);
       }
     } catch (error) {
-      this.emit('error', error);
+      if (error.type !== 'aborted') {
+        this.emit('error', error);
+      }
     }
+    this.abortControllers = this.abortControllers.filter((x) => x !== abortController);
   }
 
   /**
@@ -195,6 +214,9 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
    */
   async shutdown(): Promise<void> {
     this.active = false;
+    for (const abortController of this.abortControllers) {
+      abortController.abort();
+    }
     // Catch exceptions here as pubsub is sometimes closed by process kill signals.
     if (this.ipfsId) {
       try {
@@ -242,7 +264,7 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
       this.hasNewPeers = true;
       this.peersCache.set(message.from, true);
     }
-    const remoteHash = message.data.toString('utf8');
+    const remoteHash = Buffer.from(message.data).toString('utf8');
     this.remoteHashQueue.push(remoteHash);
     this.loadIpfsHashes();
   }
@@ -269,7 +291,7 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
   }
 
   async loadIpfsHash(hash:string) {
-    const stream = asyncIterableToReadableStream(this.ipfs.cat(hash, { timeout: 30000 }));
+    const stream = asyncIterableToReadableStream(this.ipfs.cat(new CID(hash), { timeout: 30000 }));
     const parser = jsonStreamParser();
     const streamArray = jsonStreamArray();
     const pipeline = stream.pipe(parser);

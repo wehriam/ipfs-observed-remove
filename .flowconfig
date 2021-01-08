@@ -1,6 +1,7 @@
 [ignore]
 
 .*/node_modules/documentation/*
+.*/node_modules/cids/src/index.js.flow
 .*/dist/.*.flow
 [include]
 
@@ -9,4 +10,4 @@
 flow/
 
 [options]
-traces=3
+traces=5

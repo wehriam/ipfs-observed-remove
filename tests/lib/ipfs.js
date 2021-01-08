@@ -45,12 +45,10 @@ module.exports.getGatewayIpfsNode = async (port:number) => {
   await daemon.api.id();
   const pid = await daemon.pid();
   pids.push(pid);
-  console.log(`Spawned ${pid}`);
   return daemon.api;
 };
 
 module.exports.closeAllNodes = async () => {
-  console.log(`Closing ${pids.length} node${pids.length === 1 ? '' : 's'}: ${pids.join(', ')}`);
   await factory.clean();
   for (const pid of pids) {
     process.kill(pid);
@@ -89,7 +87,6 @@ const getIpfsNode = module.exports.getIpfsNode = async (bootstrap:Array<string> 
   await daemon.api.id();
   const pid = await daemon.pid();
   pids.push(pid);
-  console.log(`Spawned ${pid}`);
   return daemon.api;
 };
 

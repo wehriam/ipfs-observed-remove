@@ -1,6 +1,6 @@
 {
   "name": "ipfs-observed-remove",
-  "version": "2.2.34",
+  "version": "2.2.35",
   "main": "dist/index.js",
   "repository": "git@github.com:wehriam/ipfs-observed-remove",
   "author": "John Wehr <johnwehr@gmail.com>",
@@ -9,7 +9,7 @@
     "build": "rm -rf ./dist; flow-remove-types ./src --out-dir ./dist && flow-copy-source ./src ./dist",
     "flow-typed": "./node_modules/.bin/flow-typed install --overwrite",
     "test": "yarn lint && yarn test:js",
-    "test:js": "cross-env NODE_ENV=test jest tests",
+    "test:js": "cross-env NODE_ENV=test jest --runInBand tests",
     "lint": "npm run lint:js && npm run lint:flow",
     "lint:js": "eslint -c ./.eslintrc --no-eslintrc --fix .",
     "lint:flow": "flow --show-all-errors",
@@ -17,7 +17,7 @@
     "documentation": "documentation readme dist/set.js --section='Set API' && documentation readme dist/map.js --section='Map API'"
   },
   "go-ipfs": {
-    "version": "v0.6.0"
+    "version": "v0.7.0"
   },
   "husky": {
     "hooks": {
@@ -29,7 +29,8 @@
     "collectCoverage": true,
     "collectCoverageFrom": [
       "src/*.js"
-    ]
+    ],
+    "testEnvironment": "node"
   },
   "devDependencies": {
     "@babel/core": "^7.10.5",
@@ -39,12 +40,12 @@
     "codecov": "^3.7.2",
     "cross-env": "^7.0.2",
     "documentation": "^13.0.2",
-    "eslint": "^7.5.0",
+    "eslint": "^7.17.0",
     "eslint-config-bunchtogether": "^1.1.6",
     "eslint-plugin-flowtype": "^5.2.0",
     "eslint-plugin-flowtype-errors": "^4.3.0",
-    "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-jest": "^23.18.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jest": "^24.1.3",
     "eslint-plugin-jsx-a11y": "^6.3.1",
     "eslint-plugin-react": "^7.20.3",
     "expect": "^26.1.0",
@@ -52,19 +53,21 @@
     "flow-copy-source": "^2.0.9",
     "flow-remove-types": "^2.130.0",
     "flow-typed": "^3.2.1",
-    "go-ipfs-dep": "github:ipfs/npm-go-ipfs-dep#master",
+    "go-ipfs-dep": "github:ipfs/npm-go-ipfs#v0.7.0",
     "husky": "^4.2.5",
-    "ipfsd-ctl": "^5.0.0",
-    "jest": "^26.1.0",
+    "ipfsd-ctl": "^7.2.0",
+    "jest": "^26.6.3",
     "jest-extended": "^0.11.5",
     "node-rsa": "^1.1.1",
     "uuid": "^8.2.0"
   },
   "dependencies": {
+    "abort-controller": "^3.0.0",
     "async-iterable-to-readable-stream": "^1.0.0",
+    "cids": "^1.1.4",
+    "ipfs-http-client": "^48.1.3",
     "json-stringify-deterministic": "^1.0.1",
     "lodash": "^4.17.19",
-    "ipfs-http-client": "^45.0.0",
     "lru-cache": "^6.0.0",
     "observed-remove": "2.2.27",
     "p-queue": "^6.6.0",
