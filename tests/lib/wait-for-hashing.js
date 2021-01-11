@@ -9,16 +9,23 @@ module.exports = async (maps: Array<IpfsObservedRemoveMap<string, any> | IpfsObs
         return false;
       }
     }
-    const hash = await maps[0].getIpfsHash();
-    for (let i = 1; i < maps.length; i += 1) {
-      if (await maps[i].getIpfsHash() !== hash) {
+    try {
+      const hash = await maps[0].getIpfsHash();
+      for (let i = 1; i < maps.length; i += 1) {
+        if (await maps[i].getIpfsHash() !== hash) {
+          return false;
+        }
+      }
+      for (const map of maps) {
+        if (map.isLoadingHashes) {
+          return false;
+        }
+      }
+    } catch (error) {
+      if (error.type === 'aborted') {
         return false;
       }
-    }
-    for (const map of maps) {
-      if (map.isLoadingHashes) {
-        return false;
-      }
+      throw error;
     }
     return true;
   };
