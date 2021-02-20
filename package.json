@@ -1,6 +1,6 @@
 {
   "name": "ipfs-observed-remove",
-  "version": "2.2.36",
+  "version": "2.2.43",
   "main": "dist/index.js",
   "repository": "git@github.com:wehriam/ipfs-observed-remove",
   "author": "John Wehr <johnwehr@gmail.com>",
@@ -62,8 +62,8 @@
     "uuid": "^8.2.0"
   },
   "dependencies": {
+    "@bunchtogether/chunked-stream-transformers": "^1.0.2",
     "abort-controller": "^3.0.0",
-    "async-iterable-to-readable-stream": "^1.0.0",
     "cids": "^1.1.4",
     "ipfs-http-client": "^48.1.3",
     "json-stringify-deterministic": "^1.0.1",

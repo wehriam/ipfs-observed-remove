@@ -1063,6 +1063,11 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
+"@bunchtogether/chunked-stream-transformers@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@bunchtogether/chunked-stream-transformers/-/chunked-stream-transformers-1.0.2.tgz#4632686b65c001ee5ece49fbabb6afd69aa5e01b"
+  integrity sha512-1hAWdOAzU61YRZgivHkuyAdGDHyPeRZMSRA7VSq0KPnR75MYqR02lcs1SS6Nz1NxlRpv8866wIhEGikQbTmaRQ==
+
 "@bunchtogether/hash-object@^1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@bunchtogether/hash-object/-/hash-object-1.0.3.tgz#d2717b6f67efab62288887cf56d8a1c8e517a04f"
@@ -2268,11 +2273,6 @@ astral-regex@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/astral-regex/-/astral-regex-2.0.0.tgz#483143c567aeed4785759c0865786dc77d7d2e31"
   integrity sha512-Z7tMw1ytTXt5jqMcOP+OQteU1VuNK9Y02uuJtKQ1Sv69jXQKKg5cibLwGJow8yzZP+eAc18EmLGPal0bp36rvQ==
-
-async-iterable-to-readable-stream@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/async-iterable-to-readable-stream/-/async-iterable-to-readable-stream-1.0.0.tgz#f698b773b3103e145971b40a41852d5e539e0a21"
-  integrity sha512-QFJMylM0xzpEfFAbzQWfJYSHXt3ivdDh90UgBlCoDaOLE7q3i2JSB95AHQHmEZHr0huQz8Rr6H+W3oUQ3dtAbQ==
 
 asynckit@^0.4.0:
   version "0.4.0"

@@ -6,15 +6,20 @@ const CID = require('cids');
 const { default: AbortController } = require('abort-controller');
 const { streamArray: jsonStreamArray } = require('stream-json/streamers/StreamArray');
 const LruCache = require('lru-cache');
+const { default: PQueue } = require('p-queue');
 const { debounce } = require('lodash');
-const asyncIterableToReadableStream = require('async-iterable-to-readable-stream');
+const { Readable } = require('stream');
+const {
+  SerializeTransform,
+  DeserializeTransform,
+} = require('@bunchtogether/chunked-stream-transformers');
 
                 
                  
                            
             
                         
-                 
+                       
   
 
 const notSubscribedRegex = /Not subscribed/;
@@ -34,6 +39,7 @@ class IpfsSignedObservedRemoveSet    extends SignedObservedRemoveSet    { // esl
     if (!ipfs) {
       throw new Error("Missing required argument 'ipfs'");
     }
+    this.chunkPubSub = !!options.chunkPubSub;
     this.ipfs = ipfs;
     this.abortController = new AbortController();
     this.topic = topic;
@@ -58,6 +64,44 @@ class IpfsSignedObservedRemoveSet    extends SignedObservedRemoveSet    { // esl
     });
     this.isLoadingHashes = false;
     this.debouncedIpfsSync = debounce(this.ipfsSync.bind(this), 1000);
+    this.serializeTransform = new SerializeTransform({
+      autoDestroy: false,
+      maxChunkSize: 1024 * 512,
+    });
+    this.serializeTransform.on('data', async (messageSlice) => {
+      try {
+        await this.ipfs.pubsub.publish(this.topic, messageSlice, { signal: this.abortController.signal });
+      } catch (error) {
+        if (error.type !== 'aborted') {
+          this.emit('error', error);
+        }
+      }
+    });
+    this.serializeTransform.on('error', (error) => {
+      this.emit('error', error);
+    });
+    this.deserializeTransform = new DeserializeTransform({
+      autoDestroy: false,
+      timeout: 10000,
+    });
+    this.deserializeTransform.on('error', (error) => {
+      this.emit('error', error);
+    });
+    this.deserializeTransform.on('data', async (message) => {
+      try {
+        const queue = JSON.parse(message.toString('utf8'));
+        await this.process(queue);
+      } catch (error) {
+        this.emit('error', error);
+      }
+    });
+    this.hashLoadQueue = new PQueue({});
+    this.hashLoadQueue.on('idle', async () => {
+      if (this.hasNewPeers) {
+        this.debouncedIpfsSync();
+      }
+      this.emit('hashesloaded');
+    });
   }
 
   /**
@@ -85,6 +129,10 @@ class IpfsSignedObservedRemoveSet    extends SignedObservedRemoveSet    { // esl
                                    
                                                  
                                            
+                               
+                                                 
+                                                     
+                                
 
   async initIpfs() {
     try {
@@ -160,8 +208,6 @@ class IpfsSignedObservedRemoveSet    extends SignedObservedRemoveSet    { // esl
     if (!this.active) {
       return;
     }
-
-
     try {
       const hash = await this.getIpfsHash();
       if (!this.active) {
@@ -273,8 +319,15 @@ class IpfsSignedObservedRemoveSet    extends SignedObservedRemoveSet    { // esl
       this.peersCache.set(message.from, true);
     }
     const remoteHash = Buffer.from(message.data).toString('utf8');
-    this.remoteHashQueue.push(remoteHash);
-    this.loadIpfsHashes();
+    if (this.syncCache.has(remoteHash)) {
+      return;
+    }
+    this.syncCache.set(remoteHash, true);
+    try {
+      this.hashLoadQueue.add(() => this.loadIpfsHash(remoteHash));
+    } catch (error) {
+      this.emit('error', error);
+    }
   }
 
   async loadIpfsHashes() {
@@ -299,7 +352,8 @@ class IpfsSignedObservedRemoveSet    extends SignedObservedRemoveSet    { // esl
   }
 
   async loadIpfsHash(hash       ) {
-    const stream = asyncIterableToReadableStream(this.ipfs.cat(new CID(hash), { timeout: 30000, signal: this.abortController.signal }));
+    // $FlowFixMe
+    const stream = Readable.from(this.ipfs.cat(new CID(hash), { timeout: 30000, signal: this.abortController.signal }));
     const parser = jsonStreamParser();
     const streamArray = jsonStreamArray();
     const pipeline = stream.pipe(parser);

@@ -36,6 +36,7 @@ module.exports = async (maps: Array<IpfsObservedRemoveMap<string, any> | IpfsObs
     }
     for (const map of maps) {
       map.removeListener('error', handleError);
+      map.removeListener('hashesloaded', handleHash);
       map.removeListener('hash', handleHash);
     }
     resolve();
@@ -45,6 +46,7 @@ module.exports = async (maps: Array<IpfsObservedRemoveMap<string, any> | IpfsObs
     clearTimeout(timeout);
     for (const map of maps) {
       map.removeListener('error', handleError);
+      map.removeListener('hashesloaded', handleHash);
       map.removeListener('hash', handleHash);
     }
     reject(error);
@@ -54,6 +56,7 @@ module.exports = async (maps: Array<IpfsObservedRemoveMap<string, any> | IpfsObs
     if (await areEqual()) {
       for (const map of maps) {
         map.removeListener('error', handleError);
+        map.removeListener('hashesloaded', handleHash);
         map.removeListener('hash', handleHash);
       }
       clearTimeout(timeout);
@@ -64,6 +67,7 @@ module.exports = async (maps: Array<IpfsObservedRemoveMap<string, any> | IpfsObs
   };
   for (const map of maps) {
     map.on('error', handleError);
+    map.on('hashesloaded', handleHash);
     map.on('hash', handleHash);
   }
 });
