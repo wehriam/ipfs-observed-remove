@@ -48,7 +48,7 @@ describe('IPFS Map', () => {
     await bob.shutdown();
   });
 
-  test.skip('Loads a 10 MB value into a signed map', async () => {
+  test('Loads a 10 MB value into a signed map', async () => {
     const topic = uuid.v4();
     const key = uuid.v4();
     const value = {};

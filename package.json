@@ -9,7 +9,7 @@
     "build": "rm -rf ./dist; flow-remove-types ./src --out-dir ./dist && flow-copy-source ./src ./dist",
     "flow-typed": "./node_modules/.bin/flow-typed install --overwrite",
     "test": "yarn lint && yarn test:js",
-    "test:js": "cross-env NODE_ENV=test jest --runInBand tests",
+    "test:js": "cross-env NODE_ENV=test jest --runInBand /Users/johnwehr/Projects/ipfs-observed-remove/tests/signed-set.test.js",
     "lint": "npm run lint:js && npm run lint:flow",
     "lint:js": "eslint -c ./.eslintrc --no-eslintrc --fix .",
     "lint:flow": "flow --show-all-errors",
