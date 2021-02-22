@@ -166,7 +166,7 @@ describe('IPFS Map', () => {
     await bob.shutdown();
   });
 
-  test('Load from a hash', async () => {
+  test('Load from a hash (chunked)', async () => {
     const topicA = uuid.v4();
     const topicB = uuid.v4();
     const keyA = uuid.v4();
@@ -188,7 +188,7 @@ describe('IPFS Map', () => {
     await bob.shutdown();
   });
 
-  test('Synchronize maps', async () => {
+  test('Synchronize maps (chunked)', async () => {
     const topic = uuid.v4();
     const keyX = uuid.v4();
     const keyY = uuid.v4();
@@ -239,7 +239,7 @@ describe('IPFS Map', () => {
     await bob.shutdown();
   });
 
-  test('Synchronize set and delete events', async () => {
+  test('Synchronize set and delete events (chunked)', async () => {
     const topic = uuid.v4();
     const keyX = uuid.v4();
     const keyY = uuid.v4();
@@ -288,7 +288,7 @@ describe('IPFS Map', () => {
     await bob.shutdown();
   });
 
-  test('Synchronize mixed maps using sync', async () => {
+  test('Synchronize mixed maps using sync (chunked)', async () => {
     const topic = uuid.v4();
     const keyA = uuid.v4();
     const keyB = uuid.v4();

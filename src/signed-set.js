@@ -71,7 +71,7 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
     });
     this.serializeTransform.on('data', async (messageSlice) => {
       try {
-        await this.ipfs.pubsub.publish(this.topic, messageSlice, { signal: this.abortController.signal });
+        await this.ipfs.pubsub.publish(this.topic, messageSlice.toString('base64'), { signal: this.abortController.signal});
       } catch (error) {
         if (error.type !== 'aborted') {
           this.emit('error', error);
@@ -88,16 +88,16 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
     this.deserializeTransform.on('error', (error) => {
       this.emit('error', error);
     });
-    this.deserializeTransform.on('data', async (message) => {
+    this.deserializeTransform.on('data', (message) => {
       try {
         const queue = JSON.parse(message.toString('utf8'));
-        await this.process(queue);
+        this.process(queue);
       } catch (error) {
         this.emit('error', error);
       }
     });
     this.hashLoadQueue = new PQueue({});
-    this.hashLoadQueue.on('idle', async () => {
+    this.hashLoadQueue.on('idle', () => {
       if (this.hasNewPeers) {
         this.debouncedIpfsSync();
       }
@@ -149,12 +149,17 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
       if (!this.active) {
         return;
       }
-      try {
+      if (this.chunkPubSub) {
         const message = Buffer.from(JSON.stringify(queue));
-        await this.ipfs.pubsub.publish(this.topic, message, { signal: this.abortController.signal });
-      } catch (error) {
-        if (error.type !== 'aborted') {
-          this.emit('error', error);
+        this.serializeTransform.write(message);
+      } else {
+        try {
+          const message = Buffer.from(JSON.stringify(queue));
+          await this.ipfs.pubsub.publish(this.topic, message, { signal: this.abortController.signal });
+        } catch (error) {
+          if (error.type !== 'aborted') {
+            this.emit('error', error);
+          }
         }
       }
     });
@@ -300,11 +305,15 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
     if (!this.active) {
       return;
     }
-    try {
-      const queue = JSON.parse(Buffer.from(message.data).toString('utf8'));
-      this.process(queue);
-    } catch (error) {
-      this.emit('error', error);
+    if (this.chunkPubSub) {
+      this.deserializeTransform.write(Buffer.from(Buffer.from(message.data).toString(), 'base64'));
+    } else {
+      try {
+        const queue = JSON.parse(Buffer.from(message.data).toString('utf8'));
+        this.process(queue);
+      } catch (error) {
+        this.emit('error', error);
+      }
     }
   }
 
