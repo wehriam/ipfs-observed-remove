@@ -70,7 +70,7 @@ class IpfsObservedRemoveSet<V> extends ObservedRemoveSet<V> { // eslint-disable-
     });
     this.serializeTransform.on('data', async (messageSlice) => {
       try {
-        await this.ipfs.pubsub.publish(this.topic, messageSlice.toString('base64'), { signal: this.abortController.signal});
+        await this.ipfs.pubsub.publish(this.topic, messageSlice.toString('base64'), { signal: this.abortController.signal });
       } catch (error) {
         if (error.type !== 'aborted') {
           this.emit('error', error);
