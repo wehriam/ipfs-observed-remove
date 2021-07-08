@@ -2,7 +2,7 @@
 
 const uuid = require('uuid');
 
-const generateValue = module.exports.generateValue = (depth?:number = 0):any => {
+const generateValue = (depth?:number = 0):any => {
   if (Math.random() < 0.4) {
     return 1000 * Math.random();
   }
@@ -19,3 +19,5 @@ const generateValue = module.exports.generateValue = (depth?:number = 0):any => 
   }
   return o;
 };
+
+module.exports.generateValue = generateValue;

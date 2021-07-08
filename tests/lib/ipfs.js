@@ -55,11 +55,6 @@ module.exports.closeAllNodes = async () => {
     abortController.abort();
   }
   await factory.clean();
-  for (const pid of pids) {
-    process.kill(pid);
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    process.kill(pid);
-  }
   nodes = [];
   abortControllers = [];
   pids = [];
