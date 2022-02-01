@@ -1,18 +1,17 @@
 // @flow
 
-const ObservedRemoveMap = require('observed-remove/dist/map');
-const { parser: jsonStreamParser } = require('stream-json/Parser');
-const CID = require('cids');
-const { default: AbortController } = require('abort-controller');
-const { streamArray: jsonStreamArray } = require('stream-json/streamers/StreamArray');
-const LruCache = require('lru-cache');
-const { default: PQueue } = require('p-queue');
-const { debounce } = require('lodash');
-const { Readable } = require('stream');
-const {
+import { ObservedRemoveMap } from 'observed-remove';
+import { parser as jsonStreamParser } from 'stream-json/Parser';
+import CID from 'cids';
+import { streamArray as jsonStreamArray } from 'stream-json/streamers/StreamArray';
+import LruCache from 'lru-cache';
+import PQueue from 'p-queue';
+import debounce from 'lodash/debounce';
+import { Readable } from 'stream';
+import {
   SerializeTransform,
   DeserializeTransform,
-} = require('@bunchtogether/chunked-stream-transformers');
+} from '@bunchtogether/chunked-stream-transformers';
 
 type Options = {
   maxAge?:number,
@@ -24,7 +23,7 @@ type Options = {
 
 const notSubscribedRegex = /Not subscribed/;
 
-class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-disable-line no-unused-vars
+export default class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-disable-line no-unused-vars
   /**
    * Create an observed-remove CRDT.
    * @param {Object} [ipfs] Object implementing the [core IPFS API](https://github.com/ipfs/interface-ipfs-core#api), most likely a [js-ipfs](https://github.com/ipfs/js-ipfs) or [ipfs-http-client](https://github.com/ipfs/js-ipfs-http-client) object.
@@ -69,7 +68,7 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
     });
     this.serializeTransform.on('data', async (messageSlice) => {
       try {
-        await this.ipfs.pubsub.publish(this.topic, messageSlice.toString('base64'), { signal: this.abortController.signal });
+        await this.ipfs.pubsub.publish(this.topic, messageSlice, { signal: this.abortController.signal });
       } catch (error) {
         if (error.type !== 'aborted') {
           this.emit('error', error);
@@ -178,6 +177,7 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
     if (!this.active) {
       return;
     }
+
     try {
       const peerIds = await this.ipfs.pubsub.peers(this.topic, { timeout: 10000, signal: this.abortController.signal });
       if (peerIds.length > 0) {
@@ -209,6 +209,7 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
     if (!this.active) {
       return;
     }
+
     try {
       const hash = await this.getIpfsHash();
       if (!this.active) {
@@ -247,6 +248,7 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
     if (this.ipfsHash) {
       return this.ipfsHash;
     }
+
     const data = this.dump();
     const file = await this.ipfs.add(Buffer.from(JSON.stringify(data)), { wrapWithDirectory: false, recursive: false, pin: false, signal: this.abortController.signal });
     this.ipfsHash = file.cid.toString();
@@ -284,13 +286,11 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
       } catch (error) {
         if (!notSubscribedRegex.test(error.message)) {
           this.abortController.abort();
-          this.abortController = new AbortController();
           throw error;
         }
       }
     }
     this.abortController.abort();
-    this.abortController = new AbortController();
     await this.deserializeTransform.onIdle();
     this.serializeTransform.destroy();
     this.deserializeTransform.destroy();
@@ -304,7 +304,7 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
       return;
     }
     if (this.chunkPubSub) {
-      this.deserializeTransform.write(Buffer.from(Buffer.from(message.data).toString(), 'base64'));
+      this.deserializeTransform.write(message.data);
     } else {
       try {
         const queue = JSON.parse(Buffer.from(message.data).toString('utf8'));
@@ -406,5 +406,3 @@ class IpfsObservedRemoveMap<K, V> extends ObservedRemoveMap<K, V> { // eslint-di
   }
 }
 
-
-module.exports = IpfsObservedRemoveMap;

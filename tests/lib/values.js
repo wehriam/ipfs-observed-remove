@@ -1,23 +1,21 @@
 // @flow
 
-const uuid = require('uuid');
+import { v4 as uuidv4 } from 'uuid';
 
-const generateValue = (depth?:number = 0):any => {
+export const generateValue = (depth?:number = 0):any => {
   if (Math.random() < 0.4) {
     return 1000 * Math.random();
   }
   if (Math.random() < 0.4) {
-    return uuid.v4();
+    return uuidv4();
   }
   if (depth > 2) {
-    return { [uuid.v4()]: uuid.v4() };
+    return { [uuidv4()]: uuidv4() };
   }
   const propertyCount = Math.round(Math.random() * 4);
   const o = {};
   for (let i = 0; i < propertyCount; i += 1) {
-    o[uuid.v4()] = generateValue(depth + 1);
+    o[uuidv4()] = generateValue(depth + 1);
   }
   return o;
 };
-
-module.exports.generateValue = generateValue;

@@ -1,18 +1,18 @@
 // @flow
 
-const SignedObservedRemoveSet = require('observed-remove/dist/signed-set');
-const { parser: jsonStreamParser } = require('stream-json/Parser');
-const CID = require('cids');
-const { default: AbortController } = require('abort-controller');
-const { streamArray: jsonStreamArray } = require('stream-json/streamers/StreamArray');
-const LruCache = require('lru-cache');
-const { default: PQueue } = require('p-queue');
-const { debounce } = require('lodash');
-const { Readable } = require('stream');
-const {
+import { SignedObservedRemoveSet } from 'observed-remove';
+import { parser as jsonStreamParser } from 'stream-json/Parser';
+import CID from 'cids';
+
+import { streamArray as jsonStreamArray } from 'stream-json/streamers/StreamArray';
+import LruCache from 'lru-cache';
+import PQueue from 'p-queue';
+import debounce from 'lodash/debounce';
+import { Readable } from 'stream';
+import {
   SerializeTransform,
   DeserializeTransform,
-} = require('@bunchtogether/chunked-stream-transformers');
+} from '@bunchtogether/chunked-stream-transformers';
 
 type Options = {
   maxAge?:number,
@@ -25,7 +25,7 @@ type Options = {
 
 const notSubscribedRegex = /Not subscribed/;
 
-class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // eslint-disable-line no-unused-vars
+export default class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // eslint-disable-line no-unused-vars
   /**
    * Create an observed-remove CRDT.
    * @param {Object} [ipfs] Object implementing the [core IPFS API](https://github.com/ipfs/interface-ipfs-core#api), most likely a [js-ipfs](https://github.com/ipfs/js-ipfs) or [ipfs-http-client](https://github.com/ipfs/js-ipfs-http-client) object.
@@ -429,5 +429,3 @@ class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // esl
   }
 }
 
-
-module.exports = IpfsSignedObservedRemoveSet;

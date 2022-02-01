@@ -1,8 +1,10 @@
 [ignore]
 
 .*/node_modules/documentation/*
+<PROJECT_ROOT>/dist/.*
 .*/node_modules/cids/src/index.js.flow
-.*/dist/.*.flow
+.*/node_modules/resolve/.*
+
 [include]
 
 [libs]
@@ -10,4 +12,5 @@
 flow/
 
 [options]
+
 traces=5

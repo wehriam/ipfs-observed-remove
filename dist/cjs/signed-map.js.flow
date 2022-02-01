@@ -1,18 +1,18 @@
 // @flow
 
-const SignedObservedRemoveMap = require('observed-remove/dist/signed-map');
-const { parser: jsonStreamParser } = require('stream-json/Parser');
-const CID = require('cids');
-const { default: AbortController } = require('abort-controller');
-const { streamArray: jsonStreamArray } = require('stream-json/streamers/StreamArray');
-const LruCache = require('lru-cache');
-const { default: PQueue } = require('p-queue');
-const { debounce } = require('lodash');
-const { Readable } = require('stream');
-const {
+import { SignedObservedRemoveMap } from 'observed-remove';
+import { parser as jsonStreamParser } from 'stream-json/Parser';
+import CID from 'cids';
+
+import { streamArray as jsonStreamArray } from 'stream-json/streamers/StreamArray';
+import LruCache from 'lru-cache';
+import PQueue from 'p-queue';
+import debounce from 'lodash/debounce';
+import { Readable } from 'stream';
+import {
   SerializeTransform,
   DeserializeTransform,
-} = require('@bunchtogether/chunked-stream-transformers');
+} from '@bunchtogether/chunked-stream-transformers';
 
 type Options = {
   maxAge?:number,
@@ -25,7 +25,7 @@ type Options = {
 
 const notSubscribedRegex = /Not subscribed/;
 
-class IpfsSignedObservedRemoveMap<K, V> extends SignedObservedRemoveMap<K, V> { // eslint-disable-line no-unused-vars
+export default class IpfsSignedObservedRemoveMap<K, V> extends SignedObservedRemoveMap<K, V> { // eslint-disable-line no-unused-vars
   /**
    * Create an observed-remove CRDT.
    * @param {Object} [ipfs] Object implementing the [core IPFS API](https://github.com/ipfs/interface-ipfs-core#api), most likely a [js-ipfs](https://github.com/ipfs/js-ipfs) or [ipfs-http-client](https://github.com/ipfs/js-ipfs-http-client) object.
@@ -71,7 +71,7 @@ class IpfsSignedObservedRemoveMap<K, V> extends SignedObservedRemoveMap<K, V> { 
     });
     this.serializeTransform.on('data', async (messageSlice) => {
       try {
-        await this.ipfs.pubsub.publish(this.topic, messageSlice.toString('base64'), { signal: this.abortController.signal });
+        await this.ipfs.pubsub.publish(this.topic, messageSlice, { signal: this.abortController.signal });
       } catch (error) {
         if (error.type !== 'aborted') {
           this.emit('error', error);
@@ -306,7 +306,7 @@ class IpfsSignedObservedRemoveMap<K, V> extends SignedObservedRemoveMap<K, V> { 
       return;
     }
     if (this.chunkPubSub) {
-      this.deserializeTransform.write(Buffer.from(Buffer.from(message.data).toString(), 'base64'));
+      this.deserializeTransform.write(message.data);
     } else {
       try {
         const queue = JSON.parse(Buffer.from(message.data).toString('utf8'));
@@ -407,6 +407,3 @@ class IpfsSignedObservedRemoveMap<K, V> extends SignedObservedRemoveMap<K, V> { 
     this.process([insertions, deletions]);
   }
 }
-
-
-module.exports = IpfsSignedObservedRemoveMap;

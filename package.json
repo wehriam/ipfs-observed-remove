@@ -1,12 +1,14 @@
 {
   "name": "ipfs-observed-remove",
-  "version": "2.2.46",
+  "version": "2.3.00",
   "main": "dist/index.js",
   "repository": "git@github.com:wehriam/ipfs-observed-remove",
   "author": "John Wehr <johnwehr@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "build": "rm -rf ./dist; flow-remove-types ./src --out-dir ./dist && flow-copy-source ./src ./dist",
+    "build:esm": "cross-env BABEL_ENV=esm babel ./src --out-dir ./dist/esm --source-maps && flow-copy-source ./src ./dist/esm",
+    "build:cjs": "cross-env BABEL_ENV=cjs babel ./src --out-dir ./dist/cjs --source-maps && flow-copy-source ./src ./dist/cjs",
+    "build": "rm -rf ./dist && yarn build:esm && yarn build:cjs",
     "flow-typed": "./node_modules/.bin/flow-typed install --overwrite",
     "test": "yarn lint && yarn test:js",
     "test:js": "cross-env NODE_ENV=test jest --runInBand tests",
@@ -18,7 +20,7 @@
     "prepare": "husky install"
   },
   "go-ipfs": {
-    "version": "v0.9.0"
+    "version": "v0.11.0"
   },
   "jest": {
     "coverageDirectory": "./coverage/",
@@ -26,47 +28,53 @@
     "collectCoverageFrom": [
       "src/*.js"
     ],
-    "testEnvironment": "node"
+    "transformIgnorePatterns": [
+      "node_modules/(?!ipfs-observed-remove)/"
+    ]
   },
   "devDependencies": {
-    "@babel/core": "^7.14.6",
-    "@babel/plugin-proposal-class-properties": "^7.14.5",
-    "@babel/plugin-transform-flow-strip-types": "^7.14.5",
-    "babel-eslint": "^10.1.0",
+    "@babel/cli": "^7.16.8",
+    "@babel/core": "^7.16.12",
+    "@babel/eslint-parser": "^7.16.5",
+    "@babel/plugin-proposal-class-properties": "^7.16.7",
+    "@babel/plugin-transform-flow-strip-types": "^7.16.7",
+    "@babel/plugin-transform-modules-commonjs": "^7.16.8",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-flow": "^7.16.7",
+    "babel-jest": "^27.4.6",
     "codecov": "^3.8.2",
     "cross-env": "^7.0.3",
     "documentation": "^13.2.5",
-    "eslint": "^7.30.0",
+    "eslint": "^8.8.0",
     "eslint-config-bunchtogether": "^1.1.6",
-    "eslint-plugin-flowtype": "^5.8.0",
-    "eslint-plugin-flowtype-errors": "^4.4.0",
-    "eslint-plugin-import": "^2.23.4",
-    "eslint-plugin-jest": "^24.3.6",
-    "eslint-plugin-jsx-a11y": "^6.4.1",
-    "eslint-plugin-react": "^7.24.0",
-    "expect": "^27.0.6",
+    "eslint-plugin-flowtype": "^8.0.3",
+    "eslint-plugin-flowtype-errors": "^4.5.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-jest": "^26.0.0",
+    "eslint-plugin-jsx-a11y": "^6.5.1",
+    "eslint-plugin-react": "^7.28.0",
+    "expect": "^27.4.6",
     "flow-bin": "^0.130.0",
     "flow-copy-source": "^2.0.9",
-    "flow-remove-types": "^2.154.0",
-    "flow-typed": "^3.3.1",
-    "go-ipfs-dep": "github:ipfs/npm-go-ipfs#v0.9.0",
-    "husky": "^7.0.1",
-    "ipfsd-ctl": "^8.0.2",
-    "jest": "^27.0.6",
-    "jest-extended": "^0.11.5",
+    "flow-remove-types": "^2.170.0",
+    "flow-typed": "^3.6.1",
+    "go-ipfs": "https://github.com/ipfs/npm-go-ipfs.git#8b0e3d947f0af11a8704760f1f78d7b8a02324aa",
+    "husky": "^7.0.4",
+    "ipfsd-ctl": "^10.0.5",
+    "jest": "^27.4.7",
+    "jest-extended": "^2.0.0",
     "node-rsa": "^1.1.1",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "ipfs-http-client": "^56.0.0"
   },
   "dependencies": {
     "@bunchtogether/chunked-stream-transformers": "^1.0.2",
-    "abort-controller": "^3.0.0",
     "cids": "^1.1.7",
-    "ipfs-http-client": "^50.1.2",
-    "json-stringify-deterministic": "^1.0.1",
+    "json-stringify-deterministic": "^1.0.2",
     "lodash": "^4.17.21",
     "lru-cache": "^6.0.0",
-    "observed-remove": "2.2.27",
-    "p-queue": "^6.6.0",
-    "stream-json": "^1.7.2"
+    "observed-remove": "2.3.0",
+    "p-queue": "^7.2.0",
+    "stream-json": "^1.7.3"
   }
 }

@@ -1,30 +1,31 @@
-//      
+// @flow
 
-const ObservedRemoveSet = require('observed-remove/dist/set');
-const { parser: jsonStreamParser } = require('stream-json/Parser');
-const CID = require('cids');
-const { default: AbortController } = require('abort-controller');
-const { streamArray: jsonStreamArray } = require('stream-json/streamers/StreamArray');
-const LruCache = require('lru-cache');
-const { default: PQueue } = require('p-queue');
-const { debounce } = require('lodash');
-const { Readable } = require('stream');
-const {
+import { SignedObservedRemoveSet } from 'observed-remove';
+import { parser as jsonStreamParser } from 'stream-json/Parser';
+import CID from 'cids';
+
+import { streamArray as jsonStreamArray } from 'stream-json/streamers/StreamArray';
+import LruCache from 'lru-cache';
+import PQueue from 'p-queue';
+import debounce from 'lodash/debounce';
+import { Readable } from 'stream';
+import {
   SerializeTransform,
   DeserializeTransform,
-} = require('@bunchtogether/chunked-stream-transformers');
+} from '@bunchtogether/chunked-stream-transformers';
 
-                
-                 
-                           
-            
-                        
-                       
-  
+type Options = {
+  maxAge?:number,
+  bufferPublishing?:number,
+  key?: any,
+  format?: string,
+  disableSync?: boolean,
+  chunkPubSub?: boolean
+};
 
 const notSubscribedRegex = /Not subscribed/;
 
-class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-line no-unused-vars
+export default class IpfsSignedObservedRemoveSet<V> extends SignedObservedRemoveSet<V> { // eslint-disable-line no-unused-vars
   /**
    * Create an observed-remove CRDT.
    * @param {Object} [ipfs] Object implementing the [core IPFS API](https://github.com/ipfs/interface-ipfs-core#api), most likely a [js-ipfs](https://github.com/ipfs/js-ipfs) or [ipfs-http-client](https://github.com/ipfs/js-ipfs-http-client) object.
@@ -34,7 +35,7 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
    * @param {String} [options.maxAge=5000] Max age of insertion/deletion identifiers
    * @param {String} [options.bufferPublishing=20] Interval by which to buffer 'publish' events
    */
-  constructor(ipfs       , topic       , entries              , options          = {}) {
+  constructor(ipfs:Object, topic:string, entries?: Iterable<[V, string, string]>, options?:Options = {}) {
     super(entries, options);
     if (!ipfs) {
       throw new Error("Missing required argument 'ipfs'");
@@ -112,27 +113,27 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
    * @readonly
    */
 
-                       
-                        
-                                      
-                          
-                         
-                               
-                                                                                         
-                                                                                        
-                     
-                                  
-                              
-                               
-                               
-                                         
-                                   
-                                                 
-                                           
-                               
-                                                 
-                                                     
-                                
+  declare ipfs: Object;
+  declare topic: string;
+  declare readyPromise: Promise<void>;
+  declare active: boolean;
+  declare ipfsId: string;
+  declare disableSync: boolean;
+  declare boundHandleQueueMessage: (message:{from:string, data:Buffer}) => Promise<void>;
+  declare boundHandleHashMessage: (message:{from:string, data:Buffer}) => Promise<void>;
+  declare db: Object;
+  declare ipfsHash: string | void;
+  declare syncCache: LruCache;
+  declare peersCache: LruCache;
+  declare hasNewPeers: boolean;
+  declare remoteHashQueue: Array<string>;
+  declare isLoadingHashes: boolean;
+  declare debouncedIpfsSync: () => Promise<void>;
+  declare abortController: AbortController;
+  declare chunkPubSub: boolean;
+  declare serializeTransform: SerializeTransform;
+  declare deserializeTransform: DeserializeTransform;
+  declare hashLoadQueue: PQueue;
 
   async initIpfs() {
     try {
@@ -176,7 +177,7 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
     }
   }
 
-  async waitForPeersThenSendHash()               {
+  async waitForPeersThenSendHash():Promise<void> {
     if (!this.active) {
       return;
     }
@@ -247,7 +248,7 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
    * Stores and returns an IPFS hash of the current insertions and deletions
    * @return {Promise<string>}
    */
-  async getIpfsHash()                 {
+  async getIpfsHash():Promise<string> {
     if (this.ipfsHash) {
       return this.ipfsHash;
     }
@@ -261,7 +262,7 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
    * Current number of IPFS pubsub peers.
    * @return {number}
    */
-  async ipfsPeerCount()                 {
+  async ipfsPeerCount():Promise<number> {
     const peerIds = await this.ipfs.pubsub.peers(this.topic, { signal: this.abortController.signal });
     return peerIds.length;
   }
@@ -270,7 +271,7 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
    * Gracefully shutdown
    * @return {void}
    */
-  async shutdown()                {
+  async shutdown(): Promise<void> {
     this.active = false;
     // Catch exceptions here as pubsub is sometimes closed by process kill signals.
     if (this.ipfsId) {
@@ -297,7 +298,7 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
     this.abortController = new AbortController();
   }
 
-  handleQueueMessage(message                           ) {
+  handleQueueMessage(message:{from:string, data:Buffer}) {
     if (message.from === this.ipfsId) {
       return;
     }
@@ -316,7 +317,7 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
     }
   }
 
-  handleHashMessage(message                           ) {
+  handleHashMessage(message:{from:string, data:Buffer}) {
     if (!this.active) {
       return;
     }
@@ -339,7 +340,28 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
     }
   }
 
-  async loadIpfsHash(hash       ) {
+  async loadIpfsHashes() {
+    if (this.isLoadingHashes) {
+      return;
+    }
+    this.isLoadingHashes = true;
+    try {
+      while (this.remoteHashQueue.length > 0 && this.active && this.isLoadingHashes) {
+        const remoteHash = this.remoteHashQueue.pop();
+        if (this.syncCache.has(remoteHash)) {
+          continue;
+        }
+        this.syncCache.set(remoteHash, true);
+        await this.loadIpfsHash(remoteHash);
+      }
+    } catch (error) {
+      this.emit('error', error);
+    }
+    this.isLoadingHashes = false;
+    this.debouncedIpfsSync();
+  }
+
+  async loadIpfsHash(hash:string) {
     // $FlowFixMe
     const stream = Readable.from(this.ipfs.cat(new CID(hash), { timeout: 30000, signal: this.abortController.signal }));
     const parser = jsonStreamParser();
@@ -407,5 +429,3 @@ class IpfsObservedRemoveSet    extends ObservedRemoveSet    { // eslint-disable-
   }
 }
 
-
-module.exports = IpfsObservedRemoveSet;

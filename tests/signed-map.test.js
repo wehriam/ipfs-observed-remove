@@ -1,13 +1,16 @@
 // @flow
 
-require('jest-extended');
-const uuid = require('uuid');
-const { getSwarm, closeAllNodes } = require('./lib/ipfs');
-const { getSigner, generateId, IpfsSignedObservedRemoveMap, InvalidSignatureError } = require('../src');
-const { generateValue } = require('./lib/values');
-const expect = require('expect');
-const NodeRSA = require('node-rsa');
-const waitForHashing = require('./lib/wait-for-hashing');
+import * as matchers from 'jest-extended';
+import expect from 'expect';
+import NodeRSA from 'node-rsa';
+import { v4 as uuidv4 } from 'uuid';
+import { getSwarm, closeAllNodes } from './lib/ipfs';
+import { getSigner, generateId, IpfsSignedObservedRemoveMap, InvalidSignatureError } from '../src';
+import { generateValue } from './lib/values';
+
+import waitForHashing from './lib/wait-for-hashing';
+
+expect.extend(matchers);
 
 const privateKey = new NodeRSA({ b: 512 });
 const sign = getSigner(privateKey.exportKey('pkcs1-private-pem'));
@@ -27,11 +30,11 @@ describe('IPFS Signed Map', () => {
   });
 
   test('Load from a hash', async () => {
-    const topicA = uuid.v4();
-    const topicB = uuid.v4();
-    const keyA = uuid.v4();
-    const keyB = uuid.v4();
-    const keyC = uuid.v4();
+    const topicA = uuidv4();
+    const topicB = uuidv4();
+    const keyA = uuidv4();
+    const keyB = uuidv4();
+    const keyC = uuidv4();
     const idA = generateId();
     const idB = generateId();
     const idC = generateId();
@@ -52,12 +55,12 @@ describe('IPFS Signed Map', () => {
   });
 
   test('Throw on invalid signatures', async () => {
-    const topic = uuid.v4();
-    const keyA = uuid.v4();
+    const topic = uuidv4();
+    const keyA = uuidv4();
     const valueA = generateValue();
     const map = new IpfsSignedObservedRemoveMap(nodes[0], topic, [], { bufferPublishing: 0, key });
     expect(() => {
-      new IpfsSignedObservedRemoveMap(nodes[0], uuid.v4(), [[keyA, valueA, generateId(), '***']], { bufferPublishing: 0, key }); // eslint-disable-line no-new
+      new IpfsSignedObservedRemoveMap(nodes[0], uuidv4(), [[keyA, valueA, generateId(), '***']], { bufferPublishing: 0, key }); // eslint-disable-line no-new
     }).toThrowError(InvalidSignatureError);
     expect(() => {
       map.setSigned(keyA, valueA, generateId(), '***');
@@ -71,15 +74,15 @@ describe('IPFS Signed Map', () => {
   });
 
   test('Emit errors on invalid synchronization', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const alicePrivateKey = new NodeRSA({ b: 512 });
     const aliceSign = getSigner(alicePrivateKey.exportKey('pkcs1-private-pem'));
     const aliceKey = alicePrivateKey.exportKey('pkcs1-public-pem');
     const bobPrivateKey = new NodeRSA({ b: 512 });
     const bobSign = getSigner(bobPrivateKey.exportKey('pkcs1-private-pem'));
     const bobKey = bobPrivateKey.exportKey('pkcs1-public-pem');
-    const keyX = uuid.v4();
-    const keyY = uuid.v4();
+    const keyX = uuidv4();
+    const keyY = uuidv4();
     const valueX = generateValue();
     const valueY = generateValue();
     const alice = new IpfsSignedObservedRemoveMap(nodes[0], topic, [], { bufferPublishing: 0, key: aliceKey });
@@ -117,10 +120,10 @@ describe('IPFS Signed Map', () => {
   });
 
   test('Synchronize maps', async () => {
-    const topic = uuid.v4();
-    const keyX = uuid.v4();
-    const keyY = uuid.v4();
-    const keyZ = uuid.v4();
+    const topic = uuidv4();
+    const keyX = uuidv4();
+    const keyY = uuidv4();
+    const keyZ = uuidv4();
     const valueX = generateValue();
     const valueY = generateValue();
     const valueZ = generateValue();
@@ -171,9 +174,9 @@ describe('IPFS Signed Map', () => {
   });
 
   test('Synchronize set and delete events', async () => {
-    const topic = uuid.v4();
-    const keyX = uuid.v4();
-    const keyY = uuid.v4();
+    const topic = uuidv4();
+    const keyX = uuidv4();
+    const keyY = uuidv4();
     const valueX = generateValue();
     const valueY = generateValue();
     const idX = generateId();
@@ -223,13 +226,13 @@ describe('IPFS Signed Map', () => {
 
 
   test('Synchronize mixed maps using sync', async () => {
-    const topic = uuid.v4();
-    const keyA = uuid.v4();
-    const keyB = uuid.v4();
-    const keyC = uuid.v4();
-    const keyX = uuid.v4();
-    const keyY = uuid.v4();
-    const keyZ = uuid.v4();
+    const topic = uuidv4();
+    const keyA = uuidv4();
+    const keyB = uuidv4();
+    const keyC = uuidv4();
+    const keyX = uuidv4();
+    const keyY = uuidv4();
+    const keyZ = uuidv4();
     const valueA = generateValue();
     const valueB = generateValue();
     const valueC = generateValue();
@@ -252,11 +255,11 @@ describe('IPFS Signed Map', () => {
   });
 
   test('Load from a hash (chunked)', async () => {
-    const topicA = uuid.v4();
-    const topicB = uuid.v4();
-    const keyA = uuid.v4();
-    const keyB = uuid.v4();
-    const keyC = uuid.v4();
+    const topicA = uuidv4();
+    const topicB = uuidv4();
+    const keyA = uuidv4();
+    const keyB = uuidv4();
+    const keyC = uuidv4();
     const idA = generateId();
     const idB = generateId();
     const idC = generateId();
@@ -277,12 +280,12 @@ describe('IPFS Signed Map', () => {
   });
 
   test('Throw on invalid signatures (chunked)', async () => {
-    const topic = uuid.v4();
-    const keyA = uuid.v4();
+    const topic = uuidv4();
+    const keyA = uuidv4();
     const valueA = generateValue();
     const map = new IpfsSignedObservedRemoveMap(nodes[0], topic, [], { chunkPubSub: true, bufferPublishing: 0, key });
     expect(() => {
-      new IpfsSignedObservedRemoveMap(nodes[0], uuid.v4(), [[keyA, valueA, generateId(), '***']], { chunkPubSub: true, bufferPublishing: 0, key }); // eslint-disable-line no-new
+      new IpfsSignedObservedRemoveMap(nodes[0], uuidv4(), [[keyA, valueA, generateId(), '***']], { chunkPubSub: true, bufferPublishing: 0, key }); // eslint-disable-line no-new
     }).toThrowError(InvalidSignatureError);
     expect(() => {
       map.setSigned(keyA, valueA, generateId(), '***');
@@ -296,15 +299,15 @@ describe('IPFS Signed Map', () => {
   });
 
   test('Emit errors on invalid synchronization (chunked)', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const alicePrivateKey = new NodeRSA({ b: 512 });
     const aliceSign = getSigner(alicePrivateKey.exportKey('pkcs1-private-pem'));
     const aliceKey = alicePrivateKey.exportKey('pkcs1-public-pem');
     const bobPrivateKey = new NodeRSA({ b: 512 });
     const bobSign = getSigner(bobPrivateKey.exportKey('pkcs1-private-pem'));
     const bobKey = bobPrivateKey.exportKey('pkcs1-public-pem');
-    const keyX = uuid.v4();
-    const keyY = uuid.v4();
+    const keyX = uuidv4();
+    const keyY = uuidv4();
     const valueX = generateValue();
     const valueY = generateValue();
     const alice = new IpfsSignedObservedRemoveMap(nodes[0], topic, [], { chunkPubSub: true, bufferPublishing: 0, key: aliceKey });
@@ -342,10 +345,10 @@ describe('IPFS Signed Map', () => {
   });
 
   test('Synchronize maps  (chunked)', async () => {
-    const topic = uuid.v4();
-    const keyX = uuid.v4();
-    const keyY = uuid.v4();
-    const keyZ = uuid.v4();
+    const topic = uuidv4();
+    const keyX = uuidv4();
+    const keyY = uuidv4();
+    const keyZ = uuidv4();
     const valueX = generateValue();
     const valueY = generateValue();
     const valueZ = generateValue();
@@ -396,9 +399,9 @@ describe('IPFS Signed Map', () => {
   });
 
   test('Synchronize set and delete events (chunked)', async () => {
-    const topic = uuid.v4();
-    const keyX = uuid.v4();
-    const keyY = uuid.v4();
+    const topic = uuidv4();
+    const keyX = uuidv4();
+    const keyY = uuidv4();
     const valueX = generateValue();
     const valueY = generateValue();
     const idX = generateId();
@@ -448,13 +451,13 @@ describe('IPFS Signed Map', () => {
 
 
   test('Synchronize mixed maps using sync (chunked)', async () => {
-    const topic = uuid.v4();
-    const keyA = uuid.v4();
-    const keyB = uuid.v4();
-    const keyC = uuid.v4();
-    const keyX = uuid.v4();
-    const keyY = uuid.v4();
-    const keyZ = uuid.v4();
+    const topic = uuidv4();
+    const keyA = uuidv4();
+    const keyB = uuidv4();
+    const keyC = uuidv4();
+    const keyX = uuidv4();
+    const keyY = uuidv4();
+    const keyZ = uuidv4();
     const valueA = generateValue();
     const valueB = generateValue();
     const valueC = generateValue();

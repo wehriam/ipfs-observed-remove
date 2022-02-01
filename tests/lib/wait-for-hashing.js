@@ -1,8 +1,8 @@
 // @flow
 
-const { IpfsObservedRemoveMap, IpfsObservedRemoveSet, IpfsSignedObservedRemoveMap, IpfsSignedObservedRemoveSet } = require('../../src');
+import { IpfsObservedRemoveMap, IpfsObservedRemoveSet, IpfsSignedObservedRemoveMap, IpfsSignedObservedRemoveSet } from '../../src';
 
-module.exports = async (maps: Array<IpfsObservedRemoveMap<string, any> | IpfsObservedRemoveSet<any> | IpfsSignedObservedRemoveMap<string, any> | IpfsSignedObservedRemoveSet<any>>) => new Promise((resolve, reject) => {
+export default async (maps: Array<IpfsObservedRemoveMap<string, any> | IpfsObservedRemoveSet<any> | IpfsSignedObservedRemoveMap<string, any> | IpfsSignedObservedRemoveSet<any>>) => new Promise((resolve, reject) => {
   const areEqual = async () => {
     for (const map of maps) {
       if (map.isLoadingHashes) {

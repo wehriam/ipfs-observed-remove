@@ -1,11 +1,11 @@
 // @flow
 
-const uuid = require('uuid');
-const { getSwarm, closeAllNodes } = require('./lib/ipfs');
-const { getSigner, generateId, IpfsObservedRemoveMap, IpfsSignedObservedRemoveMap } = require('../src');
-const expect = require('expect');
+import { v4 as uuidv4 } from 'uuid';
+import expect from 'expect';
+import NodeRSA from 'node-rsa';
+import { getSwarm, closeAllNodes } from './lib/ipfs';
+import { getSigner, generateId, IpfsObservedRemoveMap, IpfsSignedObservedRemoveMap } from '../src';
 
-const NodeRSA = require('node-rsa');
 
 jest.setTimeout(30000);
 
@@ -25,11 +25,11 @@ describe('IPFS Map', () => {
   });
 
   test('Loads a 10 MB value', async () => {
-    const topic = uuid.v4();
-    const key = uuid.v4();
+    const topic = uuidv4();
+    const key = uuidv4();
     const value = {};
     for (let i = 0; i < 134500; i += 1) {
-      value[uuid.v4()] = uuid.v4();
+      value[uuidv4()] = uuidv4();
     }
     const alice = new IpfsObservedRemoveMap(nodes[0], topic, undefined, { chunkPubSub: true, disableSync: true, bufferPublishing: 0 });
     await alice.readyPromise;
@@ -49,12 +49,12 @@ describe('IPFS Map', () => {
   });
 
   test('Loads a 10 MB value into a signed map', async () => {
-    const topic = uuid.v4();
-    const key = uuid.v4();
+    const topic = uuidv4();
+    const key = uuidv4();
     const value = {};
     const id = generateId();
     for (let i = 0; i < 134500; i += 1) {
-      value[uuid.v4()] = uuid.v4();
+      value[uuidv4()] = uuidv4();
     }
     const alice = new IpfsSignedObservedRemoveMap(nodes[0], topic, [], { chunkPubSub: true, disableSync: true, bufferPublishing: 0, key: publicKey });
     await alice.readyPromise;

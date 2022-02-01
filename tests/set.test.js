@@ -1,12 +1,14 @@
 // @flow
 
-require('jest-extended');
-const uuid = require('uuid');
-const { getSwarm, closeAllNodes } = require('./lib/ipfs');
-const { IpfsObservedRemoveSet } = require('../src');
-const { generateValue } = require('./lib/values');
-const expect = require('expect');
-const waitForHashing = require('./lib/wait-for-hashing');
+import * as matchers from 'jest-extended';
+import { v4 as uuidv4 } from 'uuid';
+import expect from 'expect';
+import { getSwarm, closeAllNodes } from './lib/ipfs';
+import { IpfsObservedRemoveSet } from '../src';
+import { generateValue } from './lib/values';
+import waitForHashing from './lib/wait-for-hashing';
+
+expect.extend(matchers);
 
 jest.setTimeout(30000);
 
@@ -22,8 +24,8 @@ describe('IPFS Set', () => {
   });
 
   test('Load from a hash', async () => {
-    const topicA = uuid.v4();
-    const topicB = uuid.v4();
+    const topicA = uuidv4();
+    const topicB = uuidv4();
     const A = generateValue();
     const B = generateValue();
     const C = generateValue();
@@ -41,7 +43,7 @@ describe('IPFS Set', () => {
   });
 
   test('Synchronize sets', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const X = generateValue();
     const Y = generateValue();
     const Z = generateValue();
@@ -79,7 +81,7 @@ describe('IPFS Set', () => {
 
 
   test('Synchronize add and delete events', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const X = generateValue();
     const Y = generateValue();
     const alice = new IpfsObservedRemoveSet(nodes[0], topic, undefined, { bufferPublishing: 0 });
@@ -123,7 +125,7 @@ describe('IPFS Set', () => {
   });
 
   test('Automatically synchronize mixed sets', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const A = generateValue();
     const B = generateValue();
     const C = generateValue();
@@ -139,8 +141,8 @@ describe('IPFS Set', () => {
   });
 
   test('Load from a hash (chunked)', async () => {
-    const topicA = uuid.v4();
-    const topicB = uuid.v4();
+    const topicA = uuidv4();
+    const topicB = uuidv4();
     const A = generateValue();
     const B = generateValue();
     const C = generateValue();
@@ -158,7 +160,7 @@ describe('IPFS Set', () => {
   });
 
   test('Synchronize sets (chunked)', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const X = generateValue();
     const Y = generateValue();
     const Z = generateValue();
@@ -196,7 +198,7 @@ describe('IPFS Set', () => {
 
 
   test('Synchronize add and delete events (chunked)', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const X = generateValue();
     const Y = generateValue();
     const alice = new IpfsObservedRemoveSet(nodes[0], topic, undefined, { bufferPublishing: 0, chunkPubSub: true });
@@ -240,7 +242,7 @@ describe('IPFS Set', () => {
   });
 
   test('Automatically synchronize mixed sets (chunked)', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const A = generateValue();
     const B = generateValue();
     const C = generateValue();

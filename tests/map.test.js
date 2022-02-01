@@ -1,12 +1,14 @@
 // @flow
 
-require('jest-extended');
-const uuid = require('uuid');
-const { getSwarm, closeAllNodes } = require('./lib/ipfs');
-const { IpfsObservedRemoveMap } = require('../src');
-const { generateValue } = require('./lib/values');
-const expect = require('expect');
-const waitForHashing = require('./lib/wait-for-hashing');
+import * as matchers from 'jest-extended';
+import { v4 as uuidv4 } from 'uuid';
+import expect from 'expect';
+import { getSwarm, closeAllNodes } from './lib/ipfs';
+import { IpfsObservedRemoveMap } from '../src';
+import { generateValue } from './lib/values';
+import waitForHashing from './lib/wait-for-hashing';
+
+expect.extend(matchers);
 
 jest.setTimeout(30000);
 
@@ -22,11 +24,11 @@ describe('IPFS Map', () => {
   });
 
   test('Load from a hash', async () => {
-    const topicA = uuid.v4();
-    const topicB = uuid.v4();
-    const keyA = uuid.v4();
-    const keyB = uuid.v4();
-    const keyC = uuid.v4();
+    const topicA = uuidv4();
+    const topicB = uuidv4();
+    const keyA = uuidv4();
+    const keyB = uuidv4();
+    const keyC = uuidv4();
     const valueA = generateValue();
     const valueB = generateValue();
     const valueC = generateValue();
@@ -44,10 +46,10 @@ describe('IPFS Map', () => {
   });
 
   test('Synchronize maps', async () => {
-    const topic = uuid.v4();
-    const keyX = uuid.v4();
-    const keyY = uuid.v4();
-    const keyZ = uuid.v4();
+    const topic = uuidv4();
+    const keyX = uuidv4();
+    const keyY = uuidv4();
+    const keyZ = uuidv4();
     const valueX = generateValue();
     const valueY = generateValue();
     const valueZ = generateValue();
@@ -95,9 +97,9 @@ describe('IPFS Map', () => {
   });
 
   test('Synchronize set and delete events', async () => {
-    const topic = uuid.v4();
-    const keyX = uuid.v4();
-    const keyY = uuid.v4();
+    const topic = uuidv4();
+    const keyX = uuidv4();
+    const keyY = uuidv4();
     const valueX = generateValue();
     const valueY = generateValue();
     const alice = new IpfsObservedRemoveMap(nodes[0], topic, undefined, { bufferPublishing: 0 });
@@ -144,13 +146,13 @@ describe('IPFS Map', () => {
   });
 
   test('Synchronize mixed maps using sync', async () => {
-    const topic = uuid.v4();
-    const keyA = uuid.v4();
-    const keyB = uuid.v4();
-    const keyC = uuid.v4();
-    const keyX = uuid.v4();
-    const keyY = uuid.v4();
-    const keyZ = uuid.v4();
+    const topic = uuidv4();
+    const keyA = uuidv4();
+    const keyB = uuidv4();
+    const keyC = uuidv4();
+    const keyX = uuidv4();
+    const keyY = uuidv4();
+    const keyZ = uuidv4();
     const valueA = generateValue();
     const valueB = generateValue();
     const valueC = generateValue();
@@ -167,11 +169,11 @@ describe('IPFS Map', () => {
   });
 
   test('Load from a hash (chunked)', async () => {
-    const topicA = uuid.v4();
-    const topicB = uuid.v4();
-    const keyA = uuid.v4();
-    const keyB = uuid.v4();
-    const keyC = uuid.v4();
+    const topicA = uuidv4();
+    const topicB = uuidv4();
+    const keyA = uuidv4();
+    const keyB = uuidv4();
+    const keyC = uuidv4();
     const valueA = generateValue();
     const valueB = generateValue();
     const valueC = generateValue();
@@ -189,10 +191,10 @@ describe('IPFS Map', () => {
   });
 
   test('Synchronize maps (chunked)', async () => {
-    const topic = uuid.v4();
-    const keyX = uuid.v4();
-    const keyY = uuid.v4();
-    const keyZ = uuid.v4();
+    const topic = uuidv4();
+    const keyX = uuidv4();
+    const keyY = uuidv4();
+    const keyZ = uuidv4();
     const valueX = generateValue();
     const valueY = generateValue();
     const valueZ = generateValue();
@@ -240,9 +242,9 @@ describe('IPFS Map', () => {
   });
 
   test('Synchronize set and delete events (chunked)', async () => {
-    const topic = uuid.v4();
-    const keyX = uuid.v4();
-    const keyY = uuid.v4();
+    const topic = uuidv4();
+    const keyX = uuidv4();
+    const keyY = uuidv4();
     const valueX = generateValue();
     const valueY = generateValue();
     const alice = new IpfsObservedRemoveMap(nodes[0], topic, undefined, { chunkPubSub: true, bufferPublishing: 0 });
@@ -289,13 +291,13 @@ describe('IPFS Map', () => {
   });
 
   test('Synchronize mixed maps using sync (chunked)', async () => {
-    const topic = uuid.v4();
-    const keyA = uuid.v4();
-    const keyB = uuid.v4();
-    const keyC = uuid.v4();
-    const keyX = uuid.v4();
-    const keyY = uuid.v4();
-    const keyZ = uuid.v4();
+    const topic = uuidv4();
+    const keyA = uuidv4();
+    const keyB = uuidv4();
+    const keyC = uuidv4();
+    const keyX = uuidv4();
+    const keyY = uuidv4();
+    const keyZ = uuidv4();
     const valueA = generateValue();
     const valueB = generateValue();
     const valueC = generateValue();

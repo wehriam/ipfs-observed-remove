@@ -1,8 +1,11 @@
 {
-  "parser": "babel-eslint",
+  "parser": "@babel/eslint-parser",
   "extends": ["bunchtogether"],
   "plugins": ["jest"],
   "env": {
     "jest": true
+  },
+  "rules": {
+    "import/no-unresolved": ["error", { "commonjs": true, "caseSensitive": true, "ignore": ["p-queue"] }],
   }
 }

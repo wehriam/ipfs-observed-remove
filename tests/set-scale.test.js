@@ -1,11 +1,13 @@
 // @flow
 
-require('jest-extended');
-const uuid = require('uuid');
-const stringify = require('json-stringify-deterministic');
-const { getSwarm, closeAllNodes } = require('./lib/ipfs');
-const { IpfsObservedRemoveSet } = require('../src');
-const { generateValue } = require('./lib/values');
+import * as matchers from 'jest-extended';
+import { v4 as uuidv4 } from 'uuid';
+import stringify from 'json-stringify-deterministic';
+import { getSwarm, closeAllNodes } from './lib/ipfs';
+import { IpfsObservedRemoveSet } from '../src';
+import { generateValue } from './lib/values';
+
+expect.extend(matchers);
 
 jest.setTimeout(30000);
 
@@ -22,7 +24,7 @@ describe('Set Scale', () => {
   });
 
   test(`Synchronizes ${COUNT} sets`, async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const A = generateValue();
     const B = generateValue();
     const C = generateValue();
@@ -108,7 +110,7 @@ describe('Set Scale', () => {
   });
 
   test(`Synchronizes ${COUNT} sets automatically`, async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const sets = [new IpfsObservedRemoveSet(nodes[0], topic, [generateValue()], { bufferPublishing: 0 })];
     await sets[0].readyPromise;
     const addPromises = [];
@@ -133,7 +135,7 @@ describe('Set Scale', () => {
   });
 
   test(`Synchronizes ${COUNT} sets (chunked)`, async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const A = generateValue();
     const B = generateValue();
     const C = generateValue();
@@ -219,7 +221,7 @@ describe('Set Scale', () => {
   });
 
   test(`Synchronizes ${COUNT} sets automatically (chunked)`, async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const sets = [new IpfsObservedRemoveSet(nodes[0], topic, [generateValue()], { bufferPublishing: 0, chunkPubSub: true })];
     await sets[0].readyPromise;
     const addPromises = [];

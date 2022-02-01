@@ -1,11 +1,13 @@
 // @flow
 
-require('jest-extended');
-const uuid = require('uuid');
-const { getSwarm, closeAllNodes } = require('./lib/ipfs');
-const { IpfsObservedRemoveMap } = require('../src');
-const { generateValue } = require('./lib/values');
-const expect = require('expect');
+import * as matchers from 'jest-extended';
+import { v4 as uuidv4 } from 'uuid';
+import expect from 'expect';
+import { getSwarm, closeAllNodes } from './lib/ipfs';
+import { IpfsObservedRemoveMap } from '../src';
+import { generateValue } from './lib/values';
+
+expect.extend(matchers);
 
 jest.setTimeout(30000);
 
@@ -21,32 +23,62 @@ describe('IPFS Map', () => {
   });
 
   test('Sync values that are rapidly set', async () => {
-    const topic = uuid.v4();
-    const key = uuid.v4();
+    const topic = uuidv4();
+    const key = uuidv4();
     const alice: IpfsObservedRemoveMap<string, Object> = new IpfsObservedRemoveMap(nodes[0], topic, undefined, { bufferPublishing: 0, disableSync: true });
     const bob: IpfsObservedRemoveMap<string, Object> = new IpfsObservedRemoveMap(nodes[1], topic, undefined, { bufferPublishing: 0, disableSync: true });
     await Promise.all([alice.readyPromise, bob.readyPromise]);
-    for (let i = 0; i < 1000; i += 1) {
-      const value = generateValue();
+    let value;
+    for (let i = 0; i < 10; i += 1) {
+      value = generateValue();
       bob.set(key, value);
     }
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    if (alice.get(key) !== value) {
+      await new Promise((resolve) => {
+        const handleSet = (k, v) => {
+          if (key !== k) {
+            return;
+          }
+          if (value !== v) {
+            return;
+          }
+          alice.removeListener('set', handleSet);
+          resolve();
+        };
+        alice.addListener('set', handleSet);
+      });
+    }
     expect(alice.get(key)).toEqual(bob.get(key));
     await alice.shutdown();
     await bob.shutdown();
   });
 
   test('Sync values that are rapidly set (chunked)', async () => {
-    const topic = uuid.v4();
-    const key = uuid.v4();
+    const topic = uuidv4();
+    const key = uuidv4();
     const alice: IpfsObservedRemoveMap<string, Object> = new IpfsObservedRemoveMap(nodes[0], topic, undefined, { chunkPubSub: true, bufferPublishing: 0, disableSync: true });
     const bob: IpfsObservedRemoveMap<string, Object> = new IpfsObservedRemoveMap(nodes[1], topic, undefined, { chunkPubSub: true, bufferPublishing: 0, disableSync: true });
     await Promise.all([alice.readyPromise, bob.readyPromise]);
-    for (let i = 0; i < 100; i += 1) {
-      const value = generateValue();
+    let value;
+    for (let i = 0; i < 10; i += 1) {
+      value = generateValue();
       bob.set(key, value);
     }
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (alice.get(key) !== value) {
+      await new Promise((resolve) => {
+        const handleSet = (k, v) => {
+          if (key !== k) {
+            return;
+          }
+          if (value !== v) {
+            return;
+          }
+          alice.removeListener('set', handleSet);
+          resolve();
+        };
+        alice.addListener('set', handleSet);
+      });
+    }
     expect(alice.get(key)).toEqual(bob.get(key));
     await alice.shutdown();
     await bob.shutdown();

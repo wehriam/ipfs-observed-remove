@@ -1,11 +1,13 @@
 // @flow
 
-require('jest-extended');
-const uuid = require('uuid');
-const stringify = require('json-stringify-deterministic');
-const { getSwarm, closeAllNodes } = require('./lib/ipfs');
-const { IpfsObservedRemoveMap } = require('../src');
-const { generateValue } = require('./lib/values');
+import * as matchers from 'jest-extended';
+import { v4 as uuidv4 } from 'uuid';
+import stringify from 'json-stringify-deterministic';
+import { getSwarm, closeAllNodes } from './lib/ipfs';
+import { IpfsObservedRemoveMap } from '../src';
+import { generateValue } from './lib/values';
+
+expect.extend(matchers);
 
 jest.setTimeout(30000);
 
@@ -22,10 +24,10 @@ describe('Map Scale', () => {
   });
 
   test(`Synchronizes ${COUNT} maps`, async () => {
-    const topic = uuid.v4();
-    const keyA = uuid.v4();
-    const keyB = uuid.v4();
-    const keyC = uuid.v4();
+    const topic = uuidv4();
+    const keyA = uuidv4();
+    const keyB = uuidv4();
+    const keyC = uuidv4();
     const valueA = generateValue();
     const valueB = generateValue();
     const valueC = generateValue();
@@ -111,8 +113,8 @@ describe('Map Scale', () => {
   });
 
   test(`Synchronizes ${COUNT} maps automatically`, async () => {
-    const topic = uuid.v4();
-    const maps = [new IpfsObservedRemoveMap(nodes[0], topic, [[uuid.v4(), generateValue()]])];
+    const topic = uuidv4();
+    const maps = [new IpfsObservedRemoveMap(nodes[0], topic, [[uuidv4(), generateValue()]])];
     await maps[0].readyPromise;
     const setPromises = [];
     for (let i = 1; i < nodes.length; i += 1) {
@@ -137,10 +139,10 @@ describe('Map Scale', () => {
 
 
   test(`Synchronizes ${COUNT} maps (chunked)`, async () => {
-    const topic = uuid.v4();
-    const keyA = uuid.v4();
-    const keyB = uuid.v4();
-    const keyC = uuid.v4();
+    const topic = uuidv4();
+    const keyA = uuidv4();
+    const keyB = uuidv4();
+    const keyC = uuidv4();
     const valueA = generateValue();
     const valueB = generateValue();
     const valueC = generateValue();
@@ -226,8 +228,8 @@ describe('Map Scale', () => {
   });
 
   test(`Synchronizes ${COUNT} maps automatically (chunked)`, async () => {
-    const topic = uuid.v4();
-    const maps = [new IpfsObservedRemoveMap(nodes[0], topic, [[uuid.v4(), generateValue()]], { chunkPubSub: true, bufferPublishing: 0 })];
+    const topic = uuidv4();
+    const maps = [new IpfsObservedRemoveMap(nodes[0], topic, [[uuidv4(), generateValue()]], { chunkPubSub: true, bufferPublishing: 0 })];
     await maps[0].readyPromise;
     const setPromises = [];
     for (let i = 1; i < nodes.length; i += 1) {

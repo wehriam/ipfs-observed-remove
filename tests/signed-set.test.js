@@ -1,13 +1,15 @@
 // @flow
 
-require('jest-extended');
-const uuid = require('uuid');
-const { getSwarm, closeAllNodes } = require('./lib/ipfs');
-const { getSigner, generateId, IpfsSignedObservedRemoveSet, InvalidSignatureError } = require('../src');
-const { generateValue } = require('./lib/values');
-const expect = require('expect');
-const NodeRSA = require('node-rsa');
-const waitForHashing = require('./lib/wait-for-hashing');
+import * as matchers from 'jest-extended';
+import { v4 as uuidv4 } from 'uuid';
+import expect from 'expect';
+import NodeRSA from 'node-rsa';
+import { getSwarm, closeAllNodes } from './lib/ipfs';
+import { getSigner, generateId, IpfsSignedObservedRemoveSet, InvalidSignatureError } from '../src';
+import { generateValue } from './lib/values';
+import waitForHashing from './lib/wait-for-hashing';
+
+expect.extend(matchers);
 
 const privateKey = new NodeRSA({ b: 512 });
 const sign = getSigner(privateKey.exportKey('pkcs1-private-pem'));
@@ -27,8 +29,8 @@ describe('IPFS Signed Set', () => {
   });
 
   test('Load from a hash', async () => {
-    const topicA = uuid.v4();
-    const topicB = uuid.v4();
+    const topicA = uuidv4();
+    const topicB = uuidv4();
     const A = generateValue();
     const B = generateValue();
     const C = generateValue();
@@ -49,13 +51,13 @@ describe('IPFS Signed Set', () => {
   });
 
   test('Throw on invalid signatures', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     let id;
     const A = generateValue();
     const set = new IpfsSignedObservedRemoveSet(nodes[0], topic, [], { bufferPublishing: 0, key });
     expect(() => {
       id = generateId();
-      new IpfsSignedObservedRemoveSet(nodes[0], uuid.v4(), [[A, id, '***']], { bufferPublishing: 0, key }); // eslint-disable-line no-new
+      new IpfsSignedObservedRemoveSet(nodes[0], uuidv4(), [[A, id, '***']], { bufferPublishing: 0, key }); // eslint-disable-line no-new
     }).toThrowError(InvalidSignatureError);
     expect(() => {
       id = generateId();
@@ -71,7 +73,7 @@ describe('IPFS Signed Set', () => {
   });
 
   test('Emit errors on invalid synchronization', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     let id;
     let ids;
     const alicePrivateKey = new NodeRSA({ b: 512 });
@@ -119,7 +121,7 @@ describe('IPFS Signed Set', () => {
   });
 
   test('Synchronize sets', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const X = generateValue();
     const Y = generateValue();
     const Z = generateValue();
@@ -163,7 +165,7 @@ describe('IPFS Signed Set', () => {
 
 
   test('Synchronize add and delete events', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const X = generateValue();
     const Y = generateValue();
     const idX = generateId();
@@ -212,7 +214,7 @@ describe('IPFS Signed Set', () => {
 
 
   test('Automatically synchronize mixed sets', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const A = generateValue();
     const B = generateValue();
     const C = generateValue();
@@ -235,8 +237,8 @@ describe('IPFS Signed Set', () => {
 
 
   test('Load from a hash (chunked)', async () => {
-    const topicA = uuid.v4();
-    const topicB = uuid.v4();
+    const topicA = uuidv4();
+    const topicB = uuidv4();
     const A = generateValue();
     const B = generateValue();
     const C = generateValue();
@@ -257,13 +259,13 @@ describe('IPFS Signed Set', () => {
   });
 
   test('Throw on invalid signatures (chunked)', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     let id;
     const A = generateValue();
     const set = new IpfsSignedObservedRemoveSet(nodes[0], topic, [], { chunkPubSub: true, bufferPublishing: 0, key });
     expect(() => {
       id = generateId();
-      new IpfsSignedObservedRemoveSet(nodes[0], uuid.v4(), [[A, id, '***']], { chunkPubSub: true, bufferPublishing: 0, key }); // eslint-disable-line no-new
+      new IpfsSignedObservedRemoveSet(nodes[0], uuidv4(), [[A, id, '***']], { chunkPubSub: true, bufferPublishing: 0, key }); // eslint-disable-line no-new
     }).toThrowError(InvalidSignatureError);
     expect(() => {
       id = generateId();
@@ -279,7 +281,7 @@ describe('IPFS Signed Set', () => {
   });
 
   test('Emit errors on invalid synchronization (chunked)', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     let id;
     let ids;
     const alicePrivateKey = new NodeRSA({ b: 512 });
@@ -327,7 +329,7 @@ describe('IPFS Signed Set', () => {
   });
 
   test('Synchronize sets (chunked)', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const X = generateValue();
     const Y = generateValue();
     const Z = generateValue();
@@ -371,7 +373,7 @@ describe('IPFS Signed Set', () => {
 
 
   test('Synchronize add and delete events (chunked)', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const X = generateValue();
     const Y = generateValue();
     const idX = generateId();
@@ -420,7 +422,7 @@ describe('IPFS Signed Set', () => {
 
 
   test('Automatically synchronize mixed sets (chunked)', async () => {
-    const topic = uuid.v4();
+    const topic = uuidv4();
     const A = generateValue();
     const B = generateValue();
     const C = generateValue();
