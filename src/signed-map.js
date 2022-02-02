@@ -164,14 +164,51 @@ export default class IpfsSignedObservedRemoveMap<K, V> extends SignedObservedRem
       }
     });
     try {
-      const promises = [this.ipfs.pubsub.subscribe(this.topic, this.boundHandleQueueMessage, { discover: true, signal: this.abortController.signal })];
+      await this.ipfs.pubsub.subscribe(this.topic, this.boundHandleQueueMessage, { discover: true, signal: this.abortController.signal });
       if (!this.disableSync) {
-        promises.push(this.ipfs.pubsub.subscribe(`${this.topic}:hash`, this.boundHandleHashMessage, { discover: true, signal: this.abortController.signal }));
+        await this.ipfs.pubsub.subscribe(`${this.topic}:hash`, this.boundHandleHashMessage, { discover: true, signal: this.abortController.signal });
         this.waitForPeersThenSendHash();
       }
-      await Promise.all(promises);
     } catch (error) {
       if (error.type !== 'aborted') {
+        throw error;
+      }
+    }
+  }
+
+  async waitForPeers():Promise<void> {
+    while (true) {
+      try {
+        const peerIds = await this.ipfs.pubsub.peers(this.topic, { timeout: 10000, signal: this.abortController.signal });
+        if (this.abortController.signal.aborted) {
+          return;
+        }
+        if (peerIds.length > 0) {
+          break;
+        }
+      } catch (error) {
+        if (error.name === 'TimeoutError') {
+          continue;
+        }
+        throw error;
+      }
+    }
+    if (this.disableSync) {
+      return;
+    }
+    while (true) {
+      try {
+        const peerIds = await this.ipfs.pubsub.peers(`${this.topic}:hash`, { timeout: 10000, signal: this.abortController.signal });
+        if (this.abortController.signal.aborted) {
+          return;
+        }
+        if (peerIds.length > 0) {
+          break;
+        }
+      } catch (error) {
+        if (error.name === 'TimeoutError') {
+          continue;
+        }
         throw error;
       }
     }
@@ -181,15 +218,13 @@ export default class IpfsSignedObservedRemoveMap<K, V> extends SignedObservedRem
     if (!this.active) {
       return;
     }
-
-
     try {
       const peerIds = await this.ipfs.pubsub.peers(this.topic, { timeout: 10000, signal: this.abortController.signal });
       if (peerIds.length > 0) {
         this.debouncedIpfsSync();
       } else {
         await new Promise((resolve) => setTimeout(resolve, 10000));
-        setImmediate(() => {
+        queueMicrotask(() => {
           this.waitForPeersThenSendHash();
         });
       }
@@ -199,7 +234,7 @@ export default class IpfsSignedObservedRemoveMap<K, V> extends SignedObservedRem
         this.emit('error', error);
       }
       if (this.active && error.name === 'TimeoutError') {
-        setImmediate(() => {
+        queueMicrotask(() => {
           this.waitForPeersThenSendHash();
         });
       }
@@ -280,11 +315,10 @@ export default class IpfsSignedObservedRemoveMap<K, V> extends SignedObservedRem
         const timeout = setTimeout(() => {
           unsubscribeAbortController.abort();
         }, 5000);
-        const promises = [this.ipfs.pubsub.unsubscribe(this.topic, this.boundHandleQueueMessage, { signal: unsubscribeAbortController.signal })];
+        await this.ipfs.pubsub.unsubscribe(this.topic, this.boundHandleQueueMessage, { signal: unsubscribeAbortController.signal });
         if (!this.disableSync) {
-          promises.push(this.ipfs.pubsub.unsubscribe(`${this.topic}:hash`, this.boundHandleHashMessage, { signal: unsubscribeAbortController.signal }));
+          await this.ipfs.pubsub.unsubscribe(`${this.topic}:hash`, this.boundHandleHashMessage, { signal: unsubscribeAbortController.signal });
         }
-        await Promise.all(promises);
         clearTimeout(timeout);
       } catch (error) {
         if (!notSubscribedRegex.test(error.message)) {

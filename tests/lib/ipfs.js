@@ -18,7 +18,7 @@ const factory = DaemonFactory.createFactory({
     create: (url) => {
       const options: Object = {
         url,
-        agent: new Agent({ keepAlive: true, maxSockets: Infinity }),
+        agent: new Agent({ keepAlive: true, maxSockets: Infinity, maxTotalSockets: Infinity }),
       };
       return create(options);
     },
@@ -31,10 +31,6 @@ export const getGatewayIpfsNode = async (port:number) => {
   const options = {
     ipfsOptions: {
       config: {
-        Experimental: {
-          FilestoreEnabled: true,
-          Libp2pStreamMounting: true,
-        },
         Bootstrap: [],
         Addresses: {
           Gateway: `/ip4/127.0.0.1/tcp/${port}`,
@@ -43,8 +39,11 @@ export const getGatewayIpfsNode = async (port:number) => {
             '/ip6/::/tcp/0',
           ],
         },
-        Pubsub: {
-          Enabled: true,
+        Internal: {
+          Bitswap: {
+            MaxOutstandingBytesPerPeer: 104857600,
+            TaskWorkerCount: 32,
+          },
         },
         Discovery: {
           MDNS: {
@@ -89,10 +88,6 @@ export const getIpfsNode = async (bootstrap:Array<string> = []) => {
   const options = {
     ipfsOptions: {
       config: {
-        Experimental: {
-          FilestoreEnabled: true,
-          Libp2pStreamMounting: true,
-        },
         Bootstrap: bootstrap,
         Addresses: {
           Swarm: [
@@ -100,8 +95,11 @@ export const getIpfsNode = async (bootstrap:Array<string> = []) => {
             '/ip6/::/tcp/0',
           ],
         },
-        Pubsub: {
-          Enabled: true,
+        Internal: {
+          Bitswap: {
+            MaxOutstandingBytesPerPeer: 104857600,
+            TaskWorkerCount: 32,
+          },
         },
         Discovery: {
           MDNS: {

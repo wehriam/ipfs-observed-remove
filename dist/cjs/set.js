@@ -160,22 +160,72 @@ class IpfsObservedRemoveSet extends _observedRemove.ObservedRemoveSet {
     });
 
     try {
-      const promises = [this.ipfs.pubsub.subscribe(this.topic, this.boundHandleQueueMessage, {
+      await this.ipfs.pubsub.subscribe(this.topic, this.boundHandleQueueMessage, {
         discover: true,
         signal: this.abortController.signal
-      })];
+      });
 
       if (!this.disableSync) {
-        promises.push(this.ipfs.pubsub.subscribe(`${this.topic}:hash`, this.boundHandleHashMessage, {
+        await this.ipfs.pubsub.subscribe(`${this.topic}:hash`, this.boundHandleHashMessage, {
           discover: true,
           signal: this.abortController.signal
-        }));
+        });
         this.waitForPeersThenSendHash();
       }
-
-      await Promise.all(promises);
     } catch (error) {
       if (error.type !== 'aborted') {
+        throw error;
+      }
+    }
+  }
+
+  async waitForPeers() {
+    while (true) {
+      try {
+        const peerIds = await this.ipfs.pubsub.peers(this.topic, {
+          timeout: 10000,
+          signal: this.abortController.signal
+        });
+
+        if (this.abortController.signal.aborted) {
+          return;
+        }
+
+        if (peerIds.length > 0) {
+          break;
+        }
+      } catch (error) {
+        if (error.name === 'TimeoutError') {
+          continue;
+        }
+
+        throw error;
+      }
+    }
+
+    if (this.disableSync) {
+      return;
+    }
+
+    while (true) {
+      try {
+        const peerIds = await this.ipfs.pubsub.peers(`${this.topic}:hash`, {
+          timeout: 10000,
+          signal: this.abortController.signal
+        });
+
+        if (this.abortController.signal.aborted) {
+          return;
+        }
+
+        if (peerIds.length > 0) {
+          break;
+        }
+      } catch (error) {
+        if (error.name === 'TimeoutError') {
+          continue;
+        }
+
         throw error;
       }
     }
@@ -196,7 +246,7 @@ class IpfsObservedRemoveSet extends _observedRemove.ObservedRemoveSet {
         this.debouncedIpfsSync();
       } else {
         await new Promise(resolve => setTimeout(resolve, 10000));
-        setImmediate(() => {
+        queueMicrotask(() => {
           this.waitForPeersThenSendHash();
         });
       }
@@ -207,7 +257,7 @@ class IpfsObservedRemoveSet extends _observedRemove.ObservedRemoveSet {
       }
 
       if (this.active && error.name === 'TimeoutError') {
-        setImmediate(() => {
+        queueMicrotask(() => {
           this.waitForPeersThenSendHash();
         });
       }
@@ -306,17 +356,16 @@ class IpfsObservedRemoveSet extends _observedRemove.ObservedRemoveSet {
         const timeout = setTimeout(() => {
           unsubscribeAbortController.abort();
         }, 5000);
-        const promises = [this.ipfs.pubsub.unsubscribe(this.topic, this.boundHandleQueueMessage, {
+        await this.ipfs.pubsub.unsubscribe(this.topic, this.boundHandleQueueMessage, {
           signal: unsubscribeAbortController.signal
-        })];
+        });
 
         if (!this.disableSync) {
-          promises.push(this.ipfs.pubsub.unsubscribe(`${this.topic}:hash`, this.boundHandleHashMessage, {
+          await this.ipfs.pubsub.unsubscribe(`${this.topic}:hash`, this.boundHandleHashMessage, {
             signal: unsubscribeAbortController.signal
-          }));
+          });
         }
 
-        await Promise.all(promises);
         clearTimeout(timeout);
       } catch (error) {
         if (!notSubscribedRegex.test(error.message)) {

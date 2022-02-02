@@ -68,14 +68,14 @@ bob.get('a'); // 1
 
 #### Table of Contents
 
--   [constructor](#constructor)
-    -   [Parameters](#parameters)
--   [ipfsSync](#ipfssync)
--   [dump](#dump)
--   [getIpfsHash](#getipfshash)
--   [ipfsPeerCount](#ipfspeercount)
--   [shutdown](#shutdown)
--   [IpfsObservedRemoveSet#readyPromise](#ipfsobservedremovesetreadypromise)
+*   [constructor](#constructor)
+    *   [Parameters](#parameters)
+*   [ipfsSync](#ipfssync)
+*   [dump](#dump)
+*   [getIpfsHash](#getipfshash)
+*   [ipfsPeerCount](#ipfspeercount)
+*   [shutdown](#shutdown)
+*   [IpfsObservedRemoveSet#readyPromise](#ipfsobservedremovesetreadypromise)
 
 ### constructor
 
@@ -83,18 +83,19 @@ Create an observed-remove CRDT.
 
 #### Parameters
 
--   `ipfs` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** Object implementing the [core IPFS API](https://github.com/ipfs/interface-ipfs-core#api), most likely a [js-ipfs](https://github.com/ipfs/js-ipfs) or [ipfs-http-client](https://github.com/ipfs/js-ipfs-http-client) object.
--   `topic` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** IPFS pubub topic to use in synchronizing the CRDT.
--   `entries` **Iterable&lt;V>** Iterable of initial values (optional, default `[]`)
--   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)**  (optional, default `{}`)
-    -   `options.maxAge` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Max age of insertion/deletion identifiers (optional, default `5000`)
-    -   `options.bufferPublishing` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Interval by which to buffer 'publish' events (optional, default `20`)
+*   `ipfs` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** Object implementing the [core IPFS API](https://github.com/ipfs/interface-ipfs-core#api), most likely a [js-ipfs](https://github.com/ipfs/js-ipfs) or [ipfs-http-client](https://github.com/ipfs/js-ipfs-http-client) object.
+*   `topic` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** IPFS pubub topic to use in synchronizing the CRDT.
+*   `entries` **Iterable\<V>** Iterable of initial values (optional, default `[]`)
+*   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)**  (optional, default `{}`)
+
+    *   `options.maxAge` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Max age of insertion/deletion identifiers (optional, default `5000`)
+    *   `options.bufferPublishing` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Interval by which to buffer 'publish' events (optional, default `20`)
 
 ### ipfsSync
 
 Publish an IPFS hash of an array containing all of the object's insertions and deletions.
 
-Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;any>>** 
+Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)\<any>>** 
 
 ### dump
 
@@ -104,7 +105,7 @@ Return a sorted array containing all of the set's insertions and deletions.
 
 Stores and returns an IPFS hash of the current insertions and deletions
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** 
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** 
 
 ### ipfsPeerCount
 
@@ -122,7 +123,7 @@ Returns **void**
 
 Resolves when IPFS topic subscriptions are confirmed.
 
-Type: [Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;void>
+Type: [Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<void>
 
 ## Map API
 
@@ -130,14 +131,14 @@ Type: [Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Glob
 
 #### Table of Contents
 
--   [constructor](#constructor)
-    -   [Parameters](#parameters)
--   [ipfsSync](#ipfssync)
--   [dump](#dump)
--   [getIpfsHash](#getipfshash)
--   [ipfsPeerCount](#ipfspeercount)
--   [shutdown](#shutdown)
--   [IpfsObservedRemoveSet#readyPromise](#ipfsobservedremovesetreadypromise)
+*   [constructor](#constructor)
+    *   [Parameters](#parameters)
+*   [ipfsSync](#ipfssync)
+*   [dump](#dump)
+*   [getIpfsHash](#getipfshash)
+*   [ipfsPeerCount](#ipfspeercount)
+*   [shutdown](#shutdown)
+*   [IpfsObservedRemoveSet#readyPromise](#ipfsobservedremovesetreadypromise)
 
 ### constructor
 
@@ -145,19 +146,20 @@ Create an observed-remove CRDT.
 
 #### Parameters
 
--   `ipfs` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** Object implementing the [core IPFS API](https://github.com/ipfs/interface-ipfs-core#api), most likely a [js-ipfs](https://github.com/ipfs/js-ipfs) or [ipfs-http-client](https://github.com/ipfs/js-ipfs-http-client) object.
--   `topic` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** IPFS pubub topic to use in synchronizing the CRDT.
--   `entries` **Iterable&lt;V>** Iterable of initial values (optional, default `[]`)
--   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)**  (optional, default `{}`)
-    -   `options.maxAge` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Max age of insertion/deletion identifiers (optional, default `5000`)
-    -   `options.bufferPublishing` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Interval by which to buffer 'publish' events (optional, default `20`)
-    -   `options.chunkPubSub` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Chunk pubsub messages for values greater than 1 MB (optional, default `false`)
+*   `ipfs` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)?** Object implementing the [core IPFS API](https://github.com/ipfs/interface-ipfs-core#api), most likely a [js-ipfs](https://github.com/ipfs/js-ipfs) or [ipfs-http-client](https://github.com/ipfs/js-ipfs-http-client) object.
+*   `topic` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)?** IPFS pubub topic to use in synchronizing the CRDT.
+*   `entries` **Iterable\<V>** Iterable of initial values (optional, default `[]`)
+*   `options` **[Object](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Object)**  (optional, default `{}`)
+
+    *   `options.maxAge` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Max age of insertion/deletion identifiers (optional, default `5000`)
+    *   `options.bufferPublishing` **[String](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)** Interval by which to buffer 'publish' events (optional, default `20`)
+    *   `options.chunkPubSub` **[boolean](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Boolean)** Chunk pubsub messages for values greater than 1 MB (optional, default `false`)
 
 ### ipfsSync
 
 Publish an IPFS hash of an array containing all of the object's insertions and deletions.
 
-Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)&lt;any>>** 
+Returns **[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)<[Array](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Array)\<any>>**
 
 ### dump
 
@@ -167,22 +169,22 @@ Return a sorted array containing all of the set's insertions and deletions.
 
 Stores and returns an IPFS hash of the current insertions and deletions
 
-Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>** 
+Returns **[Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)<[string](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/String)>**
 
 ### ipfsPeerCount
 
 Current number of IPFS pubsub peers.
 
-Returns **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)** 
+Returns **[number](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Number)**
 
 ### shutdown
 
 Gracefully shutdown
 
-Returns **void** 
+Returns **void**
 
 ### IpfsObservedRemoveSet#readyPromise
 
 Resolves when IPFS topic subscriptions are confirmed.
 
-Type: [Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;void>
+Type: [Promise](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)\<void>

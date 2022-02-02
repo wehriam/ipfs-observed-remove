@@ -26,10 +26,13 @@ describe('IPFS Map', () => {
     const topic = uuidv4();
     const key = uuidv4();
     const alice: IpfsObservedRemoveMap<string, Object> = new IpfsObservedRemoveMap(nodes[0], topic, undefined, { bufferPublishing: 0, disableSync: true });
+    await alice.readyPromise;
     const bob: IpfsObservedRemoveMap<string, Object> = new IpfsObservedRemoveMap(nodes[1], topic, undefined, { bufferPublishing: 0, disableSync: true });
-    await Promise.all([alice.readyPromise, bob.readyPromise]);
+    await bob.readyPromise;
+    await Promise.all([alice.waitForPeers(), bob.waitForPeers()]);
     let value;
-    for (let i = 0; i < 10; i += 1) {
+
+    for (let i = 0; i < 50; i += 1) {
       value = generateValue();
       bob.set(key, value);
     }
@@ -57,10 +60,12 @@ describe('IPFS Map', () => {
     const topic = uuidv4();
     const key = uuidv4();
     const alice: IpfsObservedRemoveMap<string, Object> = new IpfsObservedRemoveMap(nodes[0], topic, undefined, { chunkPubSub: true, bufferPublishing: 0, disableSync: true });
+    await alice.readyPromise;
     const bob: IpfsObservedRemoveMap<string, Object> = new IpfsObservedRemoveMap(nodes[1], topic, undefined, { chunkPubSub: true, bufferPublishing: 0, disableSync: true });
-    await Promise.all([alice.readyPromise, bob.readyPromise]);
+    await bob.readyPromise;
+    await Promise.all([alice.waitForPeers(), bob.waitForPeers()]);
     let value;
-    for (let i = 0; i < 10; i += 1) {
+    for (let i = 0; i < 50; i += 1) {
       value = generateValue();
       bob.set(key, value);
     }
