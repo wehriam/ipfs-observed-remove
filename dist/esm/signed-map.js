@@ -1,4 +1,4 @@
-import { SignedObservedRemoveMap } from 'observed-remove';
+import SignedObservedRemoveMap from 'observed-remove/signed-map';
 import { parser as jsonStreamParser } from 'stream-json/Parser';
 import CID from 'cids';
 import { streamArray as jsonStreamArray } from 'stream-json/streamers/StreamArray';

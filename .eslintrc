@@ -6,6 +6,7 @@
     "jest": true
   },
   "rules": {
-    "import/no-unresolved": ["error", { "commonjs": true, "caseSensitive": true, "ignore": ["p-queue"] }],
+    "import/extensions": ["error", { ignore": ["p-queue", "observed-remove/map", "observed-remove/set", "observed-remove/signed-map", "observed-remove/signed-set"] }],
+    "import/no-unresolved": ["error", { "commonjs": true, "caseSensitive": true, "ignore": ["p-queue", "observed-remove/map", "observed-remove/set", "observed-remove/signed-map", "observed-remove/signed-set"] }],
   }
 }

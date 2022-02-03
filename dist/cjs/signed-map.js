@@ -5,7 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _observedRemove = require("observed-remove");
+var _signedMap = _interopRequireDefault(require("observed-remove/signed-map"));
 
 var _Parser = require("stream-json/Parser");
 
@@ -27,7 +27,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 const notSubscribedRegex = /Not subscribed/;
 
-class IpfsSignedObservedRemoveMap extends _observedRemove.SignedObservedRemoveMap {
+class IpfsSignedObservedRemoveMap extends _signedMap.default {
   // eslint-disable-line no-unused-vars
 
   /**

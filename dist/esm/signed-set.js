@@ -1,4 +1,4 @@
-import { SignedObservedRemoveSet } from 'observed-remove';
+import SignedObservedRemoveSet from 'observed-remove/signed-set';
 import { parser as jsonStreamParser } from 'stream-json/Parser';
 import CID from 'cids';
 import { streamArray as jsonStreamArray } from 'stream-json/streamers/StreamArray';

@@ -1,6 +1,6 @@
 // @flow
 
-import { ObservedRemoveSet } from 'observed-remove';
+import ObservedRemoveSet from 'observed-remove/set';
 import { parser as jsonStreamParser } from 'stream-json/Parser';
 import CID from 'cids';
 

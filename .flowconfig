@@ -14,3 +14,7 @@ flow/
 [options]
 
 traces=5
+module.name_mapper='observed-remove/map' -> '<PROJECT_ROOT>/node_modules/observed-remove/dist/cjs/map.js'
+module.name_mapper='observed-remove/set' -> '<PROJECT_ROOT>/node_modules/observed-remove/dist/cjs/set.js'
+module.name_mapper='observed-remove/signed-map' -> '<PROJECT_ROOT>/node_modules/observed-remove/dist/cjs/signed-map.js'
+module.name_mapper='observed-remove/signed-set' -> '<PROJECT_ROOT>/node_modules/observed-remove/dist/cjs/signed-set.js'
