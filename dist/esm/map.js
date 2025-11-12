@@ -56,14 +56,21 @@ export default class IpfsObservedRemoveMap extends ObservedRemoveMap {
       maxChunkSize: 1024 * 512
     });
     this.serializeTransform.on('data', async messageSlice => {
+      const {
+        controller,
+        cleanup
+      } = this.createLinkedAbortController();
+
       try {
         await this.ipfs.pubsub.publish(this.topic, messageSlice, {
-          signal: this.abortController.signal
+          signal: controller.signal
         });
       } catch (error) {
         if (error.type !== 'aborted') {
           this.emit('error', error);
         }
+      } finally {
+        cleanup();
       }
     });
     this.serializeTransform.on('error', error => {
@@ -102,6 +109,35 @@ export default class IpfsObservedRemoveMap extends ObservedRemoveMap {
    */
 
 
+  /**
+   * Create a per-operation abort controller linked to the main abort controller.
+   * This prevents listener accumulation in any-signal when combining signals.
+   * @private
+   * @returns {{controller: AbortController, cleanup: Function}}
+   */
+  createLinkedAbortController() {
+    const controller = new AbortController();
+
+    let cleanup = () => {};
+
+    if (this.abortController.signal.aborted) {
+      controller.abort();
+    } else {
+      const handler = () => controller.abort();
+
+      this.abortController.signal.addEventListener('abort', handler);
+
+      cleanup = () => {
+        this.abortController.signal.removeEventListener('abort', handler);
+      };
+    }
+
+    return {
+      controller,
+      cleanup
+    };
+  }
+
   async initIpfs() {
     try {
       const {
@@ -127,15 +163,22 @@ export default class IpfsObservedRemoveMap extends ObservedRemoveMap {
         const message = Buffer.from(JSON.stringify(queue));
         this.serializeTransform.write(message);
       } else {
+        const {
+          controller,
+          cleanup
+        } = this.createLinkedAbortController();
+
         try {
           const message = Buffer.from(JSON.stringify(queue));
           await this.ipfs.pubsub.publish(this.topic, message, {
-            signal: this.abortController.signal
+            signal: controller.signal
           });
         } catch (error) {
           if (error.type !== 'aborted') {
             this.emit('error', error);
           }
+        } finally {
+          cleanup();
         }
       }
     });
@@ -162,10 +205,15 @@ export default class IpfsObservedRemoveMap extends ObservedRemoveMap {
 
   async waitForPeers() {
     while (true) {
+      const {
+        controller,
+        cleanup
+      } = this.createLinkedAbortController();
+
       try {
         const peerIds = await this.ipfs.pubsub.peers(this.topic, {
           timeout: 10000,
-          signal: this.abortController.signal
+          signal: controller.signal
         });
 
         if (this.abortController.signal.aborted) {
@@ -181,6 +229,8 @@ export default class IpfsObservedRemoveMap extends ObservedRemoveMap {
         }
 
         throw error;
+      } finally {
+        cleanup();
       }
     }
 
@@ -189,10 +239,15 @@ export default class IpfsObservedRemoveMap extends ObservedRemoveMap {
     }
 
     while (true) {
+      const {
+        controller,
+        cleanup
+      } = this.createLinkedAbortController();
+
       try {
         const peerIds = await this.ipfs.pubsub.peers(`${this.topic}:hash`, {
           timeout: 10000,
-          signal: this.abortController.signal
+          signal: controller.signal
         });
 
         if (this.abortController.signal.aborted) {
@@ -208,6 +263,8 @@ export default class IpfsObservedRemoveMap extends ObservedRemoveMap {
         }
 
         throw error;
+      } finally {
+        cleanup();
       }
     }
   }
@@ -217,10 +274,15 @@ export default class IpfsObservedRemoveMap extends ObservedRemoveMap {
       return;
     }
 
+    const {
+      controller,
+      cleanup
+    } = this.createLinkedAbortController();
+
     try {
       const peerIds = await this.ipfs.pubsub.peers(this.topic, {
         timeout: 10000,
-        signal: this.abortController.signal
+        signal: controller.signal
       });
 
       if (peerIds.length > 0) {
@@ -242,6 +304,8 @@ export default class IpfsObservedRemoveMap extends ObservedRemoveMap {
           this.waitForPeersThenSendHash();
         });
       }
+    } finally {
+      cleanup();
     }
   }
   /**
@@ -264,10 +328,19 @@ export default class IpfsObservedRemoveMap extends ObservedRemoveMap {
 
       if (!this.syncCache.has(hash, true) || this.hasNewPeers) {
         this.syncCache.set(hash, true);
-        await this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(hash, 'utf8'), {
-          signal: this.abortController.signal
-        });
-        this.emit('hash', hash);
+        const {
+          controller,
+          cleanup
+        } = this.createLinkedAbortController();
+
+        try {
+          await this.ipfs.pubsub.publish(`${this.topic}:hash`, Buffer.from(hash, 'utf8'), {
+            signal: controller.signal
+          });
+          this.emit('hash', hash);
+        } finally {
+          cleanup();
+        }
       }
 
       this.hasNewPeers = false;
@@ -302,14 +375,23 @@ export default class IpfsObservedRemoveMap extends ObservedRemoveMap {
     }
 
     const data = this.dump();
-    const file = await this.ipfs.add(Buffer.from(JSON.stringify(data)), {
-      wrapWithDirectory: false,
-      recursive: false,
-      pin: false,
-      signal: this.abortController.signal
-    });
-    this.ipfsHash = file.cid.toString();
-    return this.ipfsHash;
+    const {
+      controller,
+      cleanup
+    } = this.createLinkedAbortController();
+
+    try {
+      const file = await this.ipfs.add(Buffer.from(JSON.stringify(data)), {
+        wrapWithDirectory: false,
+        recursive: false,
+        pin: false,
+        signal: controller.signal
+      });
+      this.ipfsHash = file.cid.toString();
+      return this.ipfsHash;
+    } finally {
+      cleanup();
+    }
   }
   /**
    * Current number of IPFS pubsub peers.
@@ -318,10 +400,19 @@ export default class IpfsObservedRemoveMap extends ObservedRemoveMap {
 
 
   async ipfsPeerCount() {
-    const peerIds = await this.ipfs.pubsub.peers(this.topic, {
-      signal: this.abortController.signal
-    });
-    return peerIds.length;
+    const {
+      controller,
+      cleanup
+    } = this.createLinkedAbortController();
+
+    try {
+      const peerIds = await this.ipfs.pubsub.peers(this.topic, {
+        signal: controller.signal
+      });
+      return peerIds.length;
+    } finally {
+      cleanup();
+    }
   }
   /**
    * Gracefully shutdown
