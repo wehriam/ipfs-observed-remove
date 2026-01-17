@@ -1,6 +1,6 @@
 {
   "name": "ipfs-observed-remove",
-  "version": "2.3.05",
+  "version": "2.3.06",
   "repository": "git@github.com:wehriam/ipfs-observed-remove",
   "author": "John Wehr <johnwehr@gmail.com>",
   "license": "MIT",

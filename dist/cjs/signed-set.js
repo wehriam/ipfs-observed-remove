@@ -23,8 +23,11 @@ var _stream = require("stream");
 
 var _chunkedStreamTransformers = require("@bunchtogether/chunked-stream-transformers");
 
+var _events = require("events");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+// $FlowFixMe - setMaxListeners is available in Node.js 15.4+
 const notSubscribedRegex = /Not subscribed/;
 
 class IpfsSignedObservedRemoveSet extends _signedSet.default {
@@ -49,6 +52,7 @@ class IpfsSignedObservedRemoveSet extends _signedSet.default {
     this.chunkPubSub = !!options.chunkPubSub;
     this.ipfs = ipfs;
     this.abortController = new AbortController();
+    (0, _events.setMaxListeners)(1000, this.abortController.signal);
     this.topic = topic;
     this.active = true;
     this.disableSync = !!options.disableSync;
@@ -548,41 +552,46 @@ class IpfsSignedObservedRemoveSet extends _signedSet.default {
   }
 
   async loadIpfsHash(hash) {
-    // $FlowFixMe
-    const stream = _stream.Readable.from(this.ipfs.cat(new _cids.default(hash), {
-      timeout: 30000,
-      signal: this.abortController.signal
-    }));
-
-    const parser = (0, _Parser.parser)();
-    const streamArray = (0, _StreamArray.streamArray)();
-    const pipeline = stream.pipe(parser);
-    let arrayDepth = 0;
-    let streamState = 0;
-    let insertions = [];
-    let deletions = [];
-    streamArray.on('data', ({
-      value
-    }) => {
-      if (streamState === 1) {
-        insertions.push(value);
-      } else if (streamState === 3) {
-        deletions.push(value);
-      }
-
-      if (insertions.length + deletions.length < 1000) {
-        return;
-      }
-
-      const i = insertions;
-      const d = deletions;
-      insertions = [];
-      deletions = [];
-      this.process([i, d], true);
-    });
+    const {
+      controller,
+      cleanup
+    } = this.createLinkedAbortController();
+    let stream;
 
     try {
+      // $FlowFixMe
+      stream = _stream.Readable.from(this.ipfs.cat(new _cids.default(hash), {
+        timeout: 30000,
+        signal: controller.signal
+      }));
+      const parser = (0, _Parser.parser)();
+      const streamArray = (0, _StreamArray.streamArray)();
+      const pipeline = stream.pipe(parser);
+      let arrayDepth = 0;
+      let streamState = 0;
+      let insertions = [];
+      let deletions = [];
+      streamArray.on('data', ({
+        value
+      }) => {
+        if (streamState === 1) {
+          insertions.push(value);
+        } else if (streamState === 3) {
+          deletions.push(value);
+        }
+
+        if (insertions.length + deletions.length < 1000) {
+          return;
+        }
+
+        const i = insertions;
+        const d = deletions;
+        insertions = [];
+        deletions = [];
+        this.process([i, d], true);
+      });
       await new Promise((resolve, reject) => {
+        // $FlowFixMe - stream is always initialized before this Promise is created
         stream.on('error', error => {
           reject(error);
         });
@@ -621,15 +630,18 @@ class IpfsSignedObservedRemoveSet extends _signedSet.default {
           }
         });
       });
+      this.process([insertions, deletions]);
     } catch (error) {
-      if (error.type !== 'aborted') {
+      if (error.type !== 'aborted' && this.active) {
         this.emit('error', error);
       }
+    } finally {
+      if (stream) {
+        stream.destroy();
+      }
 
-      return;
+      cleanup();
     }
-
-    this.process([insertions, deletions]);
   }
 
 }

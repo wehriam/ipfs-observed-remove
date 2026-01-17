@@ -6,7 +6,9 @@ import LruCache from 'lru-cache';
 import PQueue from 'p-queue';
 import debounce from 'lodash/debounce';
 import { Readable } from 'stream';
-import { SerializeTransform, DeserializeTransform } from '@bunchtogether/chunked-stream-transformers';
+import { SerializeTransform, DeserializeTransform } from '@bunchtogether/chunked-stream-transformers'; // $FlowFixMe - setMaxListeners is available in Node.js 15.4+
+
+import { setMaxListeners } from 'events';
 const notSubscribedRegex = /Not subscribed/;
 export default class IpfsObservedRemoveMap extends ObservedRemoveMap {
   // eslint-disable-line no-unused-vars
@@ -31,6 +33,7 @@ export default class IpfsObservedRemoveMap extends ObservedRemoveMap {
     this.chunkPubSub = !!options.chunkPubSub;
     this.ipfs = ipfs;
     this.abortController = new AbortController();
+    setMaxListeners(1000, this.abortController.signal);
     this.topic = topic;
     this.active = true;
     this.disableSync = !!options.disableSync;
@@ -505,41 +508,46 @@ export default class IpfsObservedRemoveMap extends ObservedRemoveMap {
   }
 
   async loadIpfsHash(hash) {
-    // $FlowFixMe
-    const stream = Readable.from(this.ipfs.cat(new CID(hash), {
-      timeout: 30000,
-      signal: this.abortController.signal
-    })); // eslint-disable-line new-cap
-
-    const parser = jsonStreamParser();
-    const streamArray = jsonStreamArray();
-    const pipeline = stream.pipe(parser);
-    let arrayDepth = 0;
-    let streamState = 0;
-    let insertions = [];
-    let deletions = [];
-    streamArray.on('data', ({
-      value
-    }) => {
-      if (streamState === 1) {
-        insertions.push(value);
-      } else if (streamState === 3) {
-        deletions.push(value);
-      }
-
-      if (insertions.length + deletions.length < 1000) {
-        return;
-      }
-
-      const i = insertions;
-      const d = deletions;
-      insertions = [];
-      deletions = [];
-      this.process([i, d], true);
-    });
+    const {
+      controller,
+      cleanup
+    } = this.createLinkedAbortController();
+    let stream;
 
     try {
+      // $FlowFixMe
+      stream = Readable.from(this.ipfs.cat(new CID(hash), {
+        timeout: 30000,
+        signal: controller.signal
+      }));
+      const parser = jsonStreamParser();
+      const streamArray = jsonStreamArray();
+      const pipeline = stream.pipe(parser);
+      let arrayDepth = 0;
+      let streamState = 0;
+      let insertions = [];
+      let deletions = [];
+      streamArray.on('data', ({
+        value
+      }) => {
+        if (streamState === 1) {
+          insertions.push(value);
+        } else if (streamState === 3) {
+          deletions.push(value);
+        }
+
+        if (insertions.length + deletions.length < 1000) {
+          return;
+        }
+
+        const i = insertions;
+        const d = deletions;
+        insertions = [];
+        deletions = [];
+        this.process([i, d], true);
+      });
       await new Promise((resolve, reject) => {
+        // $FlowFixMe - stream is always initialized before this Promise is created
         stream.on('error', error => {
           reject(error);
         });
@@ -578,15 +586,18 @@ export default class IpfsObservedRemoveMap extends ObservedRemoveMap {
           }
         });
       });
+      this.process([insertions, deletions]);
     } catch (error) {
-      if (error.type !== 'aborted') {
+      if (error.type !== 'aborted' && this.active) {
         this.emit('error', error);
       }
+    } finally {
+      if (stream) {
+        stream.destroy();
+      }
 
-      return;
+      cleanup();
     }
-
-    this.process([insertions, deletions]);
   }
 
 }
